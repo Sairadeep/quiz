@@ -1,7 +1,13 @@
 package com.turbotechnologies.quiz
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -13,11 +19,14 @@ import com.turbotechnologies.quiz.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     lateinit var mainBinding: ActivityMainBinding
+    val auth:FirebaseAuth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = mainBinding.root
         setContentView(view)
+
+        startService(Intent(this@MainActivity,LogOutService::class.java))
 
         mainBinding.buttonStartQuiz.setOnClickListener {
             // Clicking on start quiz button must open the page with questions
@@ -40,10 +49,8 @@ class MainActivity : AppCompatActivity() {
         if (item.itemId == R.id.item_logout) {
             // Log out the user from the app who has logged in with "Email" and "Password"
             FirebaseAuth.getInstance()
-                .signOut() // Now the user will exit from FireBase and also from the app
-
+                .signOut()// Now the user will exit from FireBase and also from the app
             // Log out process for the users who have logged in with there google account
-
             val gso =
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
                     .build()
@@ -76,4 +83,6 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+
 }

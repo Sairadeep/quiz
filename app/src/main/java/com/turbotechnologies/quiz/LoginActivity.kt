@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -73,6 +75,8 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+
 
     // Sign In process
     private fun signInUser(userEmail: String, userPassword: String) {
@@ -207,5 +211,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
+
 
 }
