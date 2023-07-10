@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -14,7 +15,7 @@ import kotlin.system.exitProcess
 class LogOutService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Creating timer
-        val timer = object : CountDownTimer(60000, 1000) {
+        val timer = object : CountDownTimer(300000, 1000) {
             override fun onTick(p0: Long) {
                 val toast = Toast.makeText(
                     applicationContext,
@@ -37,12 +38,11 @@ class LogOutService : Service() {
                     if (task.isSuccessful) {
                         Toast.makeText(
                             applicationContext,
-                            "Successfully Signed Out",
+                            "Out",
                             Toast.LENGTH_LONG
                         ).show()
                         val intent = Intent(this@LogOutService, LoginActivity::class.java)
                         startActivity(intent)
-                        stopSelf()
                         //exitProcess(0)
                     } else {
                         Toast.makeText(
@@ -60,5 +60,11 @@ class LogOutService : Service() {
 
     override fun onBind(p0: Intent?): IBinder? {
         TODO("Not yet implemented")
+    }
+
+    override fun onDestroy() {
+        stopSelf()
+        Log.d("OnDestroyService","Service Destroyed!")
+        super.onDestroy()
     }
 }

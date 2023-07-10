@@ -171,7 +171,6 @@ class LoginActivity : AppCompatActivity() {
 //            if (!task.isSuccessful){
 //                Toast.makeText(applicationContext,task.exception?.localizedMessage,Toast.LENGTH_LONG).show()
 //            }
-
             Toast.makeText(
                 applicationContext,
                 "Successfully logged in with Gmail account",
@@ -195,6 +194,7 @@ class LoginActivity : AppCompatActivity() {
             account.idToken, null
         )
         auth.signInWithCredential(authCredential).addOnCompleteListener { task ->
+            // Checking whether the authentication operation is performed or not.
             if (task.isSuccessful) {
                 // Retrieve the user data, if login is done
                 //Toast.makeText(applicationContext, "Logged In", Toast.LENGTH_SHORT).show()

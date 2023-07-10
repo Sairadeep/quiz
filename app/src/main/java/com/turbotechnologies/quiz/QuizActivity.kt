@@ -11,6 +11,11 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -361,11 +366,22 @@ class QuizActivity : AppCompatActivity() {
                 .setValue(userCorrectInputScore)
             scoreRef.child("scores").child(userUID).child("wrongAnswers")
                 .setValue(userWrongInputScore).addOnSuccessListener {
-                    Toast.makeText(
-                        applicationContext,
-                        "Scores successfully sent to DB",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                    val updateWorker = OneTimeWorkRequestBuilder<DataObserveWorker>()
+                        .setConstraints(Constraints.Builder()
+                            .setRequiredNetworkType(
+                                NetworkType.CONNECTED
+                            ).build()
+                        ).build()
+                    val workManager = WorkManager.getInstance(applicationContext)
+                    workManager.enqueue(updateWorker)
+
+//                    Toast.makeText(
+//                        applicationContext,
+//                        "Scores successfully sent to DB",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+
                     val intent = Intent(this@QuizActivity, ResultActivity::class.java)
                     startActivity(intent)
                     finish()
