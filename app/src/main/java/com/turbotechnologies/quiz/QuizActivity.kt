@@ -11,11 +11,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.core.content.ContextCompat
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -30,6 +27,7 @@ class QuizActivity : AppCompatActivity() {
     val handler = Handler(Looper.getMainLooper())
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val databaseReference = database.reference.child("questions")
+    private val databaseScoresReference = database.reference.child("scores")
     // now the data can be retrieved from the db using the 'reference' object
 
     // Assigning the retrieved data to a containers
@@ -58,10 +56,10 @@ class QuizActivity : AppCompatActivity() {
 
     // In order to reach the user data in FireBase
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val user = auth.currentUser
+    private val user = auth.currentUser
 
     // Create a database reference to reach the child "scores".
-    val scoreRef = database.reference
+    private val scoreRef = database.reference
 
     // Use hash set as we are randomly generating numbers and there is a possibility of generating a sample number more than once.
     // And hash set array ignores the duplicate number
@@ -74,12 +72,15 @@ class QuizActivity : AppCompatActivity() {
         val view = quizBinding.root
         setContentView(view)
 
+        // Calling the data sync service
+        dataSyncServices()
+
         do {
             val number = Random.nextInt(1, 11)
             questions.add(number)
-            Log.d("number",number.toString())
+            Log.d("number", number.toString())
         } while (questions.size < 5)
-        Log.d("numberOfQuestions",questions.toString())
+        Log.d("numberOfQuestions", questions.toString())
 
         gameLogic()
         quizBinding.buttonFinish.setOnClickListener {
@@ -170,6 +171,33 @@ class QuizActivity : AppCompatActivity() {
         }
     }
 
+    // If the scores is updated, service sends a notification
+    private fun dataSyncServices() {
+        databaseScoresReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val user = auth.currentUser
+                val userUID = user?.uid
+                if (user != null) {
+                    val userCorrectAnswers =
+                        snapshot.child(userUID.toString()).child("correctAnswers").value.toString()
+                    val userWrongAnswers =
+                        snapshot.child(userUID.toString()).child("wrongAnswers").value.toString()
+
+                    // Send the data to service
+                    val intent = Intent(this@QuizActivity, DataSyncService::class.java)
+                    intent.putExtra("correctAnswers", userCorrectAnswers)
+                    intent.putExtra("wrongAnswers", userWrongAnswers)
+                    ContextCompat.startForegroundService(this@QuizActivity, intent)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(applicationContext, error.message, Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+
     // Method to retrieve data from RTDB
     private fun gameLogic() {
         // Resetting the options to default
@@ -186,13 +214,19 @@ class QuizActivity : AppCompatActivity() {
                     /* for(questionNumber in questions){
             For loop is not required here as we display one qn after one using "Next" button or "Timer"" } */
 
-                    question = snapshot.child("qn${questions.elementAt(questionNumber)}").child("qn").value.toString()
-                    optA = snapshot.child("qn${questions.elementAt(questionNumber)}").child("optA").value.toString()
-                    optB = snapshot.child("qn${questions.elementAt(questionNumber)}").child("optB").value.toString()
-                    optC = snapshot.child("qn${questions.elementAt(questionNumber)}").child("optC").value.toString()
-                    optD = snapshot.child("qn${questions.elementAt(questionNumber)}").child("optD").value.toString()
+                    question = snapshot.child("qn${questions.elementAt(questionNumber)}")
+                        .child("qn").value.toString()
+                    optA = snapshot.child("qn${questions.elementAt(questionNumber)}")
+                        .child("optA").value.toString()
+                    optB = snapshot.child("qn${questions.elementAt(questionNumber)}")
+                        .child("optB").value.toString()
+                    optC = snapshot.child("qn${questions.elementAt(questionNumber)}")
+                        .child("optC").value.toString()
+                    optD = snapshot.child("qn${questions.elementAt(questionNumber)}")
+                        .child("optD").value.toString()
                     correctAnswer =
-                        snapshot.child("qn${questions.elementAt(questionNumber)}").child("answer").value.toString()
+                        snapshot.child("qn${questions.elementAt(questionNumber)}")
+                            .child("answer").value.toString()
 
                     // Printing the retrieved data to the respective text view
                     quizBinding.textViewQuestion.text = question
@@ -367,20 +401,11 @@ class QuizActivity : AppCompatActivity() {
             scoreRef.child("scores").child(userUID).child("wrongAnswers")
                 .setValue(userWrongInputScore).addOnSuccessListener {
 
-                    val updateWorker = OneTimeWorkRequestBuilder<DataObserveWorker>()
-                        .setConstraints(Constraints.Builder()
-                            .setRequiredNetworkType(
-                                NetworkType.CONNECTED
-                            ).build()
-                        ).build()
-                    val workManager = WorkManager.getInstance(applicationContext)
-                    workManager.enqueue(updateWorker)
-
-//                    Toast.makeText(
-//                        applicationContext,
-//                        "Scores successfully sent to DB",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
+                    Toast.makeText(
+                        applicationContext,
+                        "Scores successfully sent to DB",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
                     val intent = Intent(this@QuizActivity, ResultActivity::class.java)
                     startActivity(intent)

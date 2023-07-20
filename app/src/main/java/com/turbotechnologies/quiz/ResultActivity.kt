@@ -20,10 +20,10 @@ class ResultActivity : AppCompatActivity() {
 
     // Create an object from the database class to access it and retrieve data from it.
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    val databaseReference = database.reference.child("scores")
+    private val databaseReference = database.reference.child("scores")
 
     // Create a object from the firebase auth class to know the person logged in
-    val auth = FirebaseAuth.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     // Create a user object
     var user = auth.currentUser

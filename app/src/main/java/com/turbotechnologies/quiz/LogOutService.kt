@@ -9,23 +9,30 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import kotlin.system.exitProcess
 
 
 class LogOutService : Service() {
+
+    private lateinit var timer: CountDownTimer
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Creating timer
-        val timer = object : CountDownTimer(300000, 1000) {
+        timer = object : CountDownTimer(60000, 1000) {
+
             override fun onTick(p0: Long) {
-                val toast = Toast.makeText(
-                    applicationContext,
-                    "Time remaining: ${p0 / 1000}",
-                    Toast.LENGTH_SHORT
-                )
-                toast.show()
+                val x = p0 / 1000
+                if (x <= 30) {
+                    val toast = Toast.makeText(
+                        applicationContext,
+                        "You are about to logout in:  $x",
+                        Toast.LENGTH_SHORT
+                    )
+                    toast.show()
+                }
             }
 
             override fun onFinish() {
+                timer.cancel()
                 val auth = FirebaseAuth.getInstance()
                 auth.signOut()
 
@@ -36,13 +43,9 @@ class LogOutService : Service() {
 
                 googleSignInClient.signOut().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        Toast.makeText(
-                            applicationContext,
-                            "Out",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        val intent = Intent(this@LogOutService, LoginActivity::class.java)
-                        startActivity(intent)
+                        val intents = Intent(this@LogOutService, LoginActivity::class.java)
+                        intents.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intents)
                         //exitProcess(0)
                     } else {
                         Toast.makeText(
@@ -53,8 +56,7 @@ class LogOutService : Service() {
                     }
                 }
             }
-        }
-        timer.start()
+        }.start()
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -64,7 +66,7 @@ class LogOutService : Service() {
 
     override fun onDestroy() {
         stopSelf()
-        Log.d("OnDestroyService","Service Destroyed!")
+        Log.d("OnDestroyService", "Service Destroyed!")
         super.onDestroy()
     }
 }
