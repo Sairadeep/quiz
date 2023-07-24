@@ -28,9 +28,6 @@ class QuizActivity : AppCompatActivity() {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val databaseReference = database.reference.child("questions")
     private val databaseScoresReference = database.reference.child("scores")
-    // now the data can be retrieved from the db using the 'reference' object
-
-    // Assigning the retrieved data to a containers
     var question = ""
     var optA = ""
     var optB = ""
@@ -41,28 +38,15 @@ class QuizActivity : AppCompatActivity() {
     var userAnswer = ""
     private var userCorrectInputScore = 0
     private var userWrongInputScore = 0
-
-    // Countdown Timer class is an abstract class
     private lateinit var timer: CountDownTimer
-    private val totalTime = 25000L // Default time for a qn is 25 seconds.
-
-    // timerContinue -> It will be 'false' when the timer is not running and 'true' when the timer is running.
+    private val totalTime = 25000L
     var timerContinue = false
     var timeLeft =
-        totalTime    // Initially, the remaining time will be started from the total time.
-
-    // Start retrieving the questions from Qn1
+        totalTime
     var questionNumber = 0
-
-    // In order to reach the user data in FireBase
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val user = auth.currentUser
-
-    // Create a database reference to reach the child "scores".
     private val scoreRef = database.reference
-
-    // Use hash set as we are randomly generating numbers and there is a possibility of generating a sample number more than once.
-    // And hash set array ignores the duplicate number
     val questions = HashSet<Int>()
 
 
@@ -72,7 +56,6 @@ class QuizActivity : AppCompatActivity() {
         val view = quizBinding.root
         setContentView(view)
 
-        // Calling the data sync service
         dataSyncServices()
 
         do {
@@ -84,7 +67,6 @@ class QuizActivity : AppCompatActivity() {
 
         gameLogic()
         quizBinding.buttonFinish.setOnClickListener {
-            // Send the data to the database
             sendScoreToDB()
         }
         quizBinding.buttonNextQn.setOnClickListener {
@@ -93,17 +75,14 @@ class QuizActivity : AppCompatActivity() {
                 (quizBinding.textViewOptionC.currentTextColor == Color.GREEN) ||
                 (quizBinding.textViewOptionD.currentTextColor == Color.GREEN)
             ) {
-                // If the timer is not reset, it will start from the time of the previous qn
                 resetTimer()
                 gameLogic()
             } else {
                 Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
                     .show()
             }
-            // If the user clicks on the next button, the highlighted options should be restored back to default values.
         }
         quizBinding.textViewOptionA.setOnClickListener {
-            // Selecting a option should stop the timer.
             pauseTimer()
             userAnswer = "optA"
             if (correctAnswer == userAnswer) {
@@ -171,7 +150,6 @@ class QuizActivity : AppCompatActivity() {
         }
     }
 
-    // If the scores is updated, service sends a notification
     private fun dataSyncServices() {
         databaseScoresReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -182,8 +160,6 @@ class QuizActivity : AppCompatActivity() {
                         snapshot.child(userUID.toString()).child("correctAnswers").value.toString()
                     val userWrongAnswers =
                         snapshot.child(userUID.toString()).child("wrongAnswers").value.toString()
-
-                    // Send the data to service
                     val intent = Intent(this@QuizActivity, DataSyncService::class.java)
                     intent.putExtra("correctAnswers", userCorrectAnswers)
                     intent.putExtra("wrongAnswers", userWrongAnswers)
@@ -197,23 +173,12 @@ class QuizActivity : AppCompatActivity() {
         })
     }
 
-
-    // Method to retrieve data from RTDB
     private fun gameLogic() {
-        // Resetting the options to default
         restoreOptions()
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Data Retrieving is performed in this method and also this method continuously monitors the DB life, if any change in the data it immediately reflects on the app.
-
-                // Knowing the total number of questions using the 'snapshot' object i.e., FireBase lets us know how many children are under a particular parent
                 questionCountInDB = snapshot.childrenCount.toInt()
-
                 if (questionNumber < questions.size) {
-                    // Data is retrieved from the 'snapshot' object created from the "DataSnapshot" class
-                    /* for(questionNumber in questions){
-            For loop is not required here as we display one qn after one using "Next" button or "Timer"" } */
-
                     question = snapshot.child("qn${questions.elementAt(questionNumber)}")
                         .child("qn").value.toString()
                     optA = snapshot.child("qn${questions.elementAt(questionNumber)}")
@@ -227,46 +192,26 @@ class QuizActivity : AppCompatActivity() {
                     correctAnswer =
                         snapshot.child("qn${questions.elementAt(questionNumber)}")
                             .child("answer").value.toString()
-
-                    // Printing the retrieved data to the respective text view
                     quizBinding.textViewQuestion.text = question
                     quizBinding.textViewOptionA.text = optA
                     quizBinding.textViewOptionB.text = optB
                     quizBinding.textViewOptionC.text = optC
                     quizBinding.textViewOptionD.text = optD
 
-                    // Disabling the progress after retrieving the data.
                     quizBinding.progressBarQnPage.visibility = View.INVISIBLE
                     quizBinding.linearLayoutInfo.visibility = View.VISIBLE
                     quizBinding.linearLayoutQns.visibility = View.VISIBLE
                     quizBinding.linearLayoutButtons.visibility = View.VISIBLE
-                    //quizBinding.imageViewFinal.visibility = View.INVISIBLE
 
                     startTimer()
 
                 } else {
-                    /*handler.postDelayed({
-                        this@QuizActivity
-                        quizBinding.progressBarQnPage.visibility = View.INVISIBLE
-                        quizBinding.linearLayoutInfo.visibility = View.INVISIBLE
-                        quizBinding.linearLayoutQns.visibility = View.INVISIBLE
-                        quizBinding.linearLayoutButtons.visibility = View.INVISIBLE
-                        quizBinding.imageViewFinal.visibility = View.VISIBLE
-                    }, 2000)
-                    Toast.makeText(
-                        applicationContext,
-                        "You have answered all the questions",
-                        Toast.LENGTH_SHORT
-                    ).show() */
-
-                    // Show a dialog message if all questions are answered
                     finalDialogMessage()
                 }
                 questionNumber++
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Action to be taken when the data cannot be retrieved or an error occurs.
                 Toast.makeText(
                     applicationContext,
                     error.message,
@@ -276,7 +221,6 @@ class QuizActivity : AppCompatActivity() {
         })
     }
 
-    // Function that highlights the correct answer
     private fun actualAnswer() {
         when (correctAnswer) {
             "optA" -> {
@@ -298,7 +242,6 @@ class QuizActivity : AppCompatActivity() {
         }
     }
 
-    // Options should be un clickable once one is selected.
     private fun disableOptions() {
         quizBinding.textViewOptionA.isClickable = false
         quizBinding.textViewOptionB.isClickable = false
@@ -306,7 +249,6 @@ class QuizActivity : AppCompatActivity() {
         quizBinding.textViewOptionD.isClickable = false
     }
 
-    // Reset the color of the buttons to default
     private fun restoreOptions() {
         quizBinding.textViewQuestion.setBackgroundResource(R.drawable.button_shape)
         quizBinding.textViewOptionA.setBackgroundResource(R.drawable.button_shape)
@@ -319,36 +261,26 @@ class QuizActivity : AppCompatActivity() {
         quizBinding.textViewOptionC.setTextColor(Color.BLACK)
         quizBinding.textViewOptionD.setTextColor(Color.BLACK)
 
-        // Enable the buttons
         quizBinding.textViewOptionA.isClickable = true
         quizBinding.textViewOptionB.isClickable = true
         quizBinding.textViewOptionC.isClickable = true
         quizBinding.textViewOptionD.isClickable = true
     }
 
-    // Method to start the timer
     private fun startTimer() {
         timer = object : CountDownTimer(
-            // Parameter 1 -> Initial value i.e., the 25 seconds
-            // Parameter 2 -> CountDown Interval
             timeLeft, 1000
         ) {
             override fun onTick(millisUntilFinish: Long) {
-                // This is what we the timer to do for every second
-                // p0 or millisUntilFinish -> It represents the time left in milliseconds until finish.
                 timeLeft =
-                    millisUntilFinish  // This states that the onTick() will work until the 25 seconds are complete.
-                // The time text should update for every second as the interval is 1 second
+                    millisUntilFinish
                 updateCountDownText()
 
             }
 
             override fun onFinish() {
-                // Here we specify what to be done, once the timer finishes.
-                // As the time is completed, first the time in the timer should reset and also the time should update.
                 resetTimer()
                 updateCountDownText()
-                // As the time is up, the user must not be able to answer the qn.
                 Toast.makeText(
                     applicationContext,
                     "Sorry, time up, moving to the next question",
@@ -377,36 +309,28 @@ class QuizActivity : AppCompatActivity() {
     }
 
     private fun pauseTimer() {
-        // Timer can be paused by using the cancel function
         timer.cancel()
-        timerContinue = false // So, timer won't work
+        timerContinue = false
     }
 
     private fun resetTimer() {
         pauseTimer()
-        timeLeft = totalTime // set to default.
+        timeLeft = totalTime
         updateCountDownText()
     }
 
-    // Function to send the score to the DB
     private fun sendScoreToDB() {
-        // Get the User UUID
-        //  Check that the user object is not null using the let
         user?.let {
             val userUID = it.uid
-            // 'it' keyword represents the "not-null" user object.
-            // Send data to DB
             scoreRef.child("scores").child(userUID).child("correctAnswers")
                 .setValue(userCorrectInputScore)
             scoreRef.child("scores").child(userUID).child("wrongAnswers")
                 .setValue(userWrongInputScore).addOnSuccessListener {
-
                     Toast.makeText(
                         applicationContext,
                         "Scores successfully sent to DB",
                         Toast.LENGTH_SHORT
                     ).show()
-
                     val intent = Intent(this@QuizActivity, ResultActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -419,20 +343,14 @@ class QuizActivity : AppCompatActivity() {
         dialogMessage.setTitle("Quiz Game")
         dialogMessage.setMessage("Congratulations!! \nYou have answered all the questions. Do you want to see the results?")
         dialogMessage.setCancelable(false)
-        dialogMessage.setPositiveButton("Result") {
-            // dialogInterface represents the dialog window
-            // i parameter returns an integer value when the button is clicked
-                dialogInterface, i ->
-            // Clicking on see result must save the score
+        dialogMessage.setPositiveButton("Result") { dialogInterface, i ->
             sendScoreToDB()
         }
         dialogMessage.setNegativeButton("Play Again") { dialogInterface, i ->
             val intent = Intent(this@QuizActivity, MainActivity::class.java)
             startActivity(intent)
-            finish() // This is called to remove this activity from the back stack.
+            finish()
         }
         dialogMessage.create().show()
     }
-
-
 }

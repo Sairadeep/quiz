@@ -17,17 +17,10 @@ import com.turbotechnologies.quiz.databinding.ActivityResultBinding
 
 class ResultActivity : AppCompatActivity() {
     lateinit var resultBinding: ActivityResultBinding
-
-    // Create an object from the database class to access it and retrieve data from it.
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val databaseReference = database.reference.child("scores")
-
-    // Create a object from the firebase auth class to know the person logged in
     private val auth = FirebaseAuth.getInstance()
-
-    // Create a user object
     var user = auth.currentUser
-
     var userCorrect = ""
     var userWrong = ""
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,8 +28,6 @@ class ResultActivity : AppCompatActivity() {
         resultBinding = ActivityResultBinding.inflate(layoutInflater)
         val view = resultBinding.root
         setContentView(view)
-
-        // Retrieving the data from the database
         dataRetrieve()
 
         resultBinding.buttonPlayAgain.setOnClickListener {
@@ -59,21 +50,15 @@ class ResultActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.item_logout) {
-            // Log out the user from the app who has logged in with "Email" and "Password"
             FirebaseAuth.getInstance()
-                .signOut() // Now the user will exit from FireBase and also from the app
-
-            // Log out process for the users who have logged in with there google account
-
+                .signOut()
             val gso =
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
                     .build()
-            // Create an object from the google Signing client class using this 'gso' object
             val googleSignInClient = GoogleSignIn.getClient(
                 this,
                 gso
             )
-            // Now using the 'googleSignInClient' object, we can sign out from the account
             googleSignInClient.signOut().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(
@@ -89,11 +74,9 @@ class ResultActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-
-            // Navigating the user to the login page after sign out
             val intent = Intent(this@ResultActivity, LoginActivity::class.java)
             startActivity(intent)
-            finish() // To close the current activity i.e., the main activity.
+            finish()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -102,14 +85,9 @@ class ResultActivity : AppCompatActivity() {
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 user?.let {
-                    // 'it' represents the non null user object.
                     val userUID = it.uid
-                    // Data is retrieved from the 'snapshot' object created from the "DataSnapshot" class
-                    // As the 'databaseReference' object reaches the parent 'scores' use snapshot to reach its child.
                     userCorrect = snapshot.child(userUID).child("correctAnswers").value.toString()
                     userWrong = snapshot.child(userUID).child("wrongAnswers").value.toString()
-
-                    // Setting the values retrieved to the text views.
                     resultBinding.textViewCorrectScore.text = userCorrect
                     resultBinding.textViewWrongScore.text = userWrong
                 }

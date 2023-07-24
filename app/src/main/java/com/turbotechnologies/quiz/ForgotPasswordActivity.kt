@@ -8,7 +8,7 @@ import com.turbotechnologies.quiz.databinding.ActivityForgotPasswordBinding
 
 class ForgotPasswordActivity : AppCompatActivity() {
     lateinit var forgotPasswordBinding: ActivityForgotPasswordBinding
-    val auth : FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         forgotPasswordBinding = ActivityForgotPasswordBinding.inflate(layoutInflater)
@@ -20,15 +20,21 @@ class ForgotPasswordActivity : AppCompatActivity() {
         }
     }
 
-    // Reset password
-    private fun forgotPassword(userEmail:String){
-        // Password reset link is sent to the user email address with the help of the method "sendPasswordResetEmail()"
+    private fun forgotPassword(userEmail: String) {
         auth.sendPasswordResetEmail(userEmail).addOnCompleteListener { task ->
-            if(task.isSuccessful){
-                Toast.makeText(applicationContext,"Reset Link has been sent to respected email",Toast.LENGTH_SHORT).show()
+            if (task.isSuccessful) {
+                Toast.makeText(
+                    applicationContext,
+                    "Reset Link has been sent to respected email",
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
-            }else{
-                Toast.makeText(applicationContext,task.exception?.localizedMessage,Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    task.exception?.localizedMessage,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

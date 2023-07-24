@@ -16,9 +16,7 @@ class LogOutService : Service() {
     private lateinit var timer: CountDownTimer
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Creating timer
         timer = object : CountDownTimer(60000, 1000) {
-
             override fun onTick(p0: Long) {
                 val x = p0 / 1000
                 if (x <= 30) {
@@ -35,7 +33,6 @@ class LogOutService : Service() {
                 timer.cancel()
                 val auth = FirebaseAuth.getInstance()
                 auth.signOut()
-
                 val gso =
                     GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
                         .build()
@@ -46,7 +43,6 @@ class LogOutService : Service() {
                         val intents = Intent(this@LogOutService, LoginActivity::class.java)
                         intents.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         startActivity(intents)
-                        //exitProcess(0)
                     } else {
                         Toast.makeText(
                             applicationContext,

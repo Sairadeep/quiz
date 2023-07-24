@@ -13,22 +13,20 @@ import com.turbotechnologies.quiz.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     lateinit var mainBinding: ActivityMainBinding
-    private val auth:FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = mainBinding.root
         setContentView(view)
 
-        startService(Intent(this@MainActivity,LogOutService::class.java))
+        startService(Intent(this@MainActivity, LogOutService::class.java))
 
         mainBinding.buttonStartQuiz.setOnClickListener {
-            // Clicking on start quiz button must open the page with questions
             val intent = Intent(this@MainActivity, QuizActivity::class.java)
             startActivity(intent)
             finish()
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -41,18 +39,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.item_logout) {
-            // Log out the user from the app who has logged in with "Email" and "Password"
-            auth.signOut()// Now the user will exit from FireBase and also from the app
-            // Log out process for the users who have logged in with there google account
+            auth.signOut()
             val gso =
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
                     .build()
-            // Create an object from the google Signing client class using this 'gso' object
             val googleSignInClient = GoogleSignIn.getClient(
                 this,
                 gso
             )
-            // Now using the 'googleSignInClient' object, we can sign out from the account
             googleSignInClient.signOut().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(
@@ -68,11 +62,9 @@ class MainActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-
-            // Navigating the user to the login page after sign out
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
-            finish() // To close the current activity i.e., the main activity.
+            finish()
         }
         return super.onOptionsItemSelected(item)
     }

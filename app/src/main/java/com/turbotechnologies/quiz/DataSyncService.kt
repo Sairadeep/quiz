@@ -28,7 +28,7 @@ class DataSyncService : Service() {
 
 
     override fun onBind(p0: Intent?): IBinder? {
-       return null
+        return null
     }
 
     @RequiresApi(VERSION_CODES.N)
@@ -43,7 +43,6 @@ class DataSyncService : Service() {
             NotificationCompat.Builder(this, notificationChannelID)
 
         if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-            // Create a notification channel
             val channel = NotificationChannel(
                 notificationChannelID,
                 "notification",
