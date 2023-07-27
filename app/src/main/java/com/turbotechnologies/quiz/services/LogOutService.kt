@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.services
 
 import android.app.Service
 import android.content.Intent
@@ -9,6 +9,7 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.turbotechnologies.quiz.view.LoginActivity
 
 
 class LogOutService : Service() {

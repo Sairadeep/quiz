@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,8 +10,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.turbotechnologies.quiz.databinding.ActivityMainBinding
+import com.turbotechnologies.quiz.viewModel.QuizViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.turbotechnologies.quiz.services.LogOutService
+import com.turbotechnologies.quiz.R
+import com.turbotechnologies.quiz.services.DataSyncService
+
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var dataView: QuizViewModel
     lateinit var mainBinding: ActivityMainBinding
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,8 +27,10 @@ class MainActivity : AppCompatActivity() {
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = mainBinding.root
         setContentView(view)
+        dataView = ViewModelProvider(this)[QuizViewModel::class.java]
 
         startService(Intent(this@MainActivity, LogOutService::class.java))
+        startService(Intent(this, DataSyncService::class.java))
 
         mainBinding.buttonStartQuiz.setOnClickListener {
             val intent = Intent(this@MainActivity, QuizActivity::class.java)

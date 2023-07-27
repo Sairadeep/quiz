@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.view
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -20,6 +20,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {

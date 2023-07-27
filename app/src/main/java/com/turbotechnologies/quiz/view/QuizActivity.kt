@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.view
 
 import android.content.Intent
 import android.graphics.Color
@@ -11,31 +11,22 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
-
+import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityQuizBinding
+import com.turbotechnologies.quiz.viewModel.QuizViewModel
 import kotlin.random.Random
 
 class QuizActivity : AppCompatActivity() {
     lateinit var
             quizBinding: ActivityQuizBinding
-    val handler = Handler(Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    private val databaseReference = database.reference.child("questions")
-    private val databaseScoresReference = database.reference.child("scores")
-    var question = ""
-    var optA = ""
-    var optB = ""
-    var optC = ""
-    var optD = ""
+    lateinit var qnData: QuizViewModel
     var correctAnswer = ""
-    var questionCountInDB = 0
-    var userAnswer = ""
+    private var userAnswer = ""
     private var userCorrectInputScore = 0
     private var userWrongInputScore = 0
     private lateinit var timer: CountDownTimer
@@ -43,29 +34,26 @@ class QuizActivity : AppCompatActivity() {
     var timerContinue = false
     var timeLeft =
         totalTime
-    var questionNumber = 0
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    var index = 0
+    var qnSet = HashSet<Int>()
+    private lateinit var currentQn: Map<String, String>
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val user = auth.currentUser
     private val scoreRef = database.reference
-    val questions = HashSet<Int>()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         quizBinding = ActivityQuizBinding.inflate(layoutInflater)
         val view = quizBinding.root
         setContentView(view)
-
-        dataSyncServices()
-
-        do {
-            val number = Random.nextInt(1, 11)
-            questions.add(number)
-            Log.d("number", number.toString())
-        } while (questions.size < 5)
-        Log.d("numberOfQuestions", questions.toString())
-
+        qnData = ViewModelProvider(this)[QuizViewModel::class.java]
         gameLogic()
+        do {
+            val number = Random.nextInt(1, 10)
+            qnSet.add(number)
+        } while (qnSet.size < 5)
+        Log.d("qnSet", qnSet.toString())
+
         quizBinding.buttonFinish.setOnClickListener {
             sendScoreToDB()
         }
@@ -76,7 +64,13 @@ class QuizActivity : AppCompatActivity() {
                 (quizBinding.textViewOptionD.currentTextColor == Color.GREEN)
             ) {
                 resetTimer()
-                gameLogic()
+                if (index < 4) {
+                    index++
+                    gameLogic()
+                    Log.d("index", index.toString())
+                } else {
+                    finalDialogMessage()
+                }
             } else {
                 Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
                     .show()
@@ -150,75 +144,30 @@ class QuizActivity : AppCompatActivity() {
         }
     }
 
-    private fun dataSyncServices() {
-        databaseScoresReference.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val user = auth.currentUser
-                val userUID = user?.uid
-                if (user != null) {
-                    val userCorrectAnswers =
-                        snapshot.child(userUID.toString()).child("correctAnswers").value.toString()
-                    val userWrongAnswers =
-                        snapshot.child(userUID.toString()).child("wrongAnswers").value.toString()
-                    val intent = Intent(this@QuizActivity, DataSyncService::class.java)
-                    intent.putExtra("correctAnswers", userCorrectAnswers)
-                    intent.putExtra("wrongAnswers", userWrongAnswers)
-                    ContextCompat.startForegroundService(this@QuizActivity, intent)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(applicationContext, error.message, Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
     private fun gameLogic() {
         restoreOptions()
-        databaseReference.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                questionCountInDB = snapshot.childrenCount.toInt()
-                if (questionNumber < questions.size) {
-                    question = snapshot.child("qn${questions.elementAt(questionNumber)}")
-                        .child("qn").value.toString()
-                    optA = snapshot.child("qn${questions.elementAt(questionNumber)}")
-                        .child("optA").value.toString()
-                    optB = snapshot.child("qn${questions.elementAt(questionNumber)}")
-                        .child("optB").value.toString()
-                    optC = snapshot.child("qn${questions.elementAt(questionNumber)}")
-                        .child("optC").value.toString()
-                    optD = snapshot.child("qn${questions.elementAt(questionNumber)}")
-                        .child("optD").value.toString()
-                    correctAnswer =
-                        snapshot.child("qn${questions.elementAt(questionNumber)}")
-                            .child("answer").value.toString()
-                    quizBinding.textViewQuestion.text = question
-                    quizBinding.textViewOptionA.text = optA
-                    quizBinding.textViewOptionB.text = optB
-                    quizBinding.textViewOptionC.text = optC
-                    quizBinding.textViewOptionD.text = optD
+        var qnIndex = 0
+        qnData.question.observe(this) { qn ->
+            val currentCount = qn.size
+             qnIndex = qnSet.elementAt(index)
+            currentQn = qn[qnIndex]
+            quizBinding.textViewQuestion.text = currentQn["qn"]
+            quizBinding.textViewOptionA.text = currentQn["optA"]
+            quizBinding.textViewOptionB.text = currentQn["optB"]
+            quizBinding.textViewOptionC.text = currentQn["optC"]
+            quizBinding.textViewOptionD.text = currentQn["optD"]
+            correctAnswer = currentQn["correctAnswer"].toString()
+            Log.d("Count:", currentCount.toString())
+        }
+        Log.d("qnNumber", qnIndex.toString())
+        qnData.qnestions()
 
-                    quizBinding.progressBarQnPage.visibility = View.INVISIBLE
-                    quizBinding.linearLayoutInfo.visibility = View.VISIBLE
-                    quizBinding.linearLayoutQns.visibility = View.VISIBLE
-                    quizBinding.linearLayoutButtons.visibility = View.VISIBLE
+        quizBinding.progressBarQnPage.visibility = View.INVISIBLE
+        quizBinding.linearLayoutInfo.visibility = View.VISIBLE
+        quizBinding.linearLayoutQns.visibility = View.VISIBLE
+        quizBinding.linearLayoutButtons.visibility = View.VISIBLE
 
-                    startTimer()
-
-                } else {
-                    finalDialogMessage()
-                }
-                questionNumber++
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(
-                    applicationContext,
-                    error.message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        })
+        startTimer()
     }
 
     private fun actualAnswer() {
@@ -304,7 +253,6 @@ class QuizActivity : AppCompatActivity() {
 
     private fun updateCountDownText() {
         val remainingTime: Int = (timeLeft / 1000).toInt()
-        // Now put this remaining time value on the time text
         quizBinding.textViewTime.text = remainingTime.toString()
     }
 

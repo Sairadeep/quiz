@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

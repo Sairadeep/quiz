@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz
+package com.turbotechnologies.quiz.view
 
 import android.annotation.SuppressLint
 import android.content.Intent
