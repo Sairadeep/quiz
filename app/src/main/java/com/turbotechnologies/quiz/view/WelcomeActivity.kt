@@ -1,4 +1,4 @@
-package com.turbotechnologies.quiz.services
+package com.turbotechnologies.quiz.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,7 +8,6 @@ import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityWelcomeBinding
-import com.turbotechnologies.quiz.view.LoginActivity
 
 class WelcomeActivity : AppCompatActivity() {
     private lateinit var splashBinding: ActivityWelcomeBinding
