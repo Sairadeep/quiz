@@ -17,17 +17,17 @@ open class InActivity : AppCompatActivity() {
         setContentView(R.layout.activity_in)
     }
 
-    open fun loginTime(LogTime : Long){
+    open fun loginTime(LogTime : String){
         logUserTime.child(auth.currentUser?.uid.toString()).child("LoggedInTime")
             .setValue(LogTime).addOnCompleteListener {
-                Log.d("loggedInTime", LogTime.toString())
+                Log.d("loggedInTime", LogTime)
             }
     }
 
-    open fun userInteractedTime(userInteraction : Long){
+    open fun userInteractedTime(userInteraction : String){
         logUserTime.child(auth.currentUser?.uid.toString()).child("lastInteractedAt")
             .setValue(userInteraction).addOnCompleteListener {
-                Log.d("lastInteractedAt", userInteraction.toString())
+                Log.d("lastInteractedAt", userInteraction)
             }
     }
 }

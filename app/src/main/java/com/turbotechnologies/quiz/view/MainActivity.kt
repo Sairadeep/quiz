@@ -1,5 +1,6 @@
 package com.turbotechnologies.quiz.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -12,6 +13,7 @@ import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityMainBinding
 import com.turbotechnologies.quiz.services.DataSyncService
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
+import java.text.SimpleDateFormat
 
 
 class MainActivity : InActivity() {
@@ -85,9 +87,11 @@ class MainActivity : InActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("SimpleDateFormat")
     override fun onUserInteraction() {
         time = System.currentTimeMillis()
-        userInteractedTime(time)
+        val interactedTime = SimpleDateFormat("HH:mm:ss").format(time)
+        userInteractedTime(interactedTime.toString())
         super.onUserInteraction()
     }
 

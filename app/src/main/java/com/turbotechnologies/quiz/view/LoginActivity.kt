@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.GoogleAuthProvider
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityLoginBinding
+import java.text.SimpleDateFormat
 
 class LoginActivity : InActivity() {
     private lateinit var loginBinding: ActivityLoginBinding
@@ -63,14 +64,16 @@ class LoginActivity : InActivity() {
     }
 
 
+    @SuppressLint("SimpleDateFormat")
     private fun signInUser(userEmail: String, userPassword: String) {
         auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
                     .show()
                 loggedInTime = System.currentTimeMillis()
-                loginTime(loggedInTime)
-               // Log.d("loggedInTime", loggedInTime.toString())
+                val loggedInDate = SimpleDateFormat("HH:mm:ss").format(loggedInTime)
+                loginTime(loggedInDate)
+                // Log.d("loggedInTime", loggedInTime.toString())
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -148,6 +151,7 @@ class LoginActivity : InActivity() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun firebaseGoogleAccount(account: GoogleSignInAccount) {
         val authCredential = GoogleAuthProvider.getCredential(
             account.idToken, null
@@ -155,7 +159,8 @@ class LoginActivity : InActivity() {
         auth.signInWithCredential(authCredential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 loggedInTime = System.currentTimeMillis()
-                loginTime(loggedInTime)
+                val loggedInDate = SimpleDateFormat("HH:mm:ss").format(loggedInTime)
+                loginTime(loggedInDate)
                 //Toast.makeText(applicationContext, "Logged In", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(
