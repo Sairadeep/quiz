@@ -4,31 +4,28 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityLoginBinding
 
-class LoginActivity : AppCompatActivity() {
-    lateinit var loginBinding: ActivityLoginBinding
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+class LoginActivity : InActivity() {
+    private lateinit var loginBinding: ActivityLoginBinding
     lateinit var googleSignInClient: GoogleSignInClient
-
     lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    var loggedInTime: Long = 0L
+
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +68,9 @@ class LoginActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
                     .show()
+                loggedInTime = System.currentTimeMillis()
+                loginTime(loggedInTime)
+               // Log.d("loggedInTime", loggedInTime.toString())
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -84,21 +84,19 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        val user = auth.currentUser // Gets the current user's information.
-        val asSignedIn = intent.getIntExtra("userJustSignedIn", 0)
-        if (asSignedIn == 1) {
-        } else if (user != null) {
-            Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
-                .show()
-            Log.d("current", "Main Activity")
-            // After logging, opening the main activity
-            val intent = Intent(this@LoginActivity, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-    }
+//    override fun onStart() {
+//        super.onStart()
+//        val user = auth.currentUser
+//        if (user != null) {
+//            Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
+//                .show()
+//            Log.d("current", "Main Activity")
+//            // After logging, opening the main activity
+//            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//        }
+//    }
 
     private fun signInGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -156,6 +154,8 @@ class LoginActivity : AppCompatActivity() {
         )
         auth.signInWithCredential(authCredential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                loggedInTime = System.currentTimeMillis()
+                loginTime(loggedInTime)
                 //Toast.makeText(applicationContext, "Logged In", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(

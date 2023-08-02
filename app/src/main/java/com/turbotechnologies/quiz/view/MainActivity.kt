@@ -5,23 +5,21 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.turbotechnologies.quiz.databinding.ActivityMainBinding
-import com.turbotechnologies.quiz.viewModel.QuizViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.turbotechnologies.quiz.services.LogOutService
 import com.turbotechnologies.quiz.R
+import com.turbotechnologies.quiz.databinding.ActivityMainBinding
 import com.turbotechnologies.quiz.services.DataSyncService
+import com.turbotechnologies.quiz.viewModel.QuizViewModel
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : InActivity() {
 
     lateinit var dataView: QuizViewModel
     lateinit var mainBinding: ActivityMainBinding
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    var time : Long = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -29,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
         dataView = ViewModelProvider(this)[QuizViewModel::class.java]
 
-        startService(Intent(this@MainActivity, LogOutService::class.java))
+            //startService(Intent(this@MainActivity, LogOutService::class.java))
         startService(Intent(this, DataSyncService::class.java))
 
         mainBinding.buttonStartQuiz.setOnClickListener {
@@ -38,6 +36,14 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
+
+//    override fun onUserInteraction() {
+//        val main = BaseActivity()
+//        time = System.currentTimeMillis()
+//        main.lastUserInteractedAt(time)
+//       Log.d("TimeInMainActivity",time.toString())
+//        super.onUserInteraction()
+//    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(
@@ -79,5 +85,10 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onUserInteraction() {
+        time = System.currentTimeMillis()
+        userInteractedTime(time)
+        super.onUserInteraction()
+    }
 
 }
