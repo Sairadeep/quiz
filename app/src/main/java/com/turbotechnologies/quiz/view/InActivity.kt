@@ -23,9 +23,6 @@ open class InActivity : AppCompatActivity() {
     private var logUserTime: DatabaseReference = database.reference.child("usersLogEntry")
     private lateinit var sharedPreferences: SharedPreferences
     private var interactedAt: Int = 0
-//    private var timeAtInteraction: String? = null
-//    private var interactionTime: Int = 0
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +34,6 @@ open class InActivity : AppCompatActivity() {
             startService(Intent(this@InActivity, LogOutService::class.java))
             startService(Intent(this, DataSyncService::class.java))
         }
-
     }
 
     open fun loginTime(LogTime: String) {
@@ -67,47 +63,3 @@ open class InActivity : AppCompatActivity() {
         return ((currentTimeInHours * 3600) + (currentTimeInMin * 60) + (currentTimeInSec)) / 60
     }
 }
-
-
-//    open fun userInteractedTime(userInteraction: String) {
-//        logUserTime.child(auth.currentUser?.uid.toString()).child("lastInteractedAt")
-//            .setValue(userInteraction).addOnCompleteListener {
-//                Log.d("lastInteractedAt", userInteraction)
-//            }
-//    }
-
-//    @SuppressLint("SimpleDateFormat")
-//    private fun interactTime() {
-//        val user = auth.currentUser
-//        val userid = user?.uid
-//        if (user != null) {
-//            interactTime.addValueEventListener(object : ValueEventListener {
-//                override fun onDataChange(snapshot: DataSnapshot) {
-//                    val interactedTime =
-//                        snapshot.child(userid.toString()).child("lastInteractedAt").value.toString()
-//                    val timeIna = interactedTime.split(":")
-//                    val timeInaHour = timeIna[0].toInt()
-//                    val timeInaMin = timeIna[1].toInt()
-//                    val timeInaSec = timeIna[2].toInt()
-//                    interactionTime = ((timeInaHour * 3600) + (timeInaMin * 60) + (timeInaSec)) / 60
-//                }
-//
-//                override fun onCancelled(error: DatabaseError) {
-//                    Toast.makeText(applicationContext, error.message, Toast.LENGTH_SHORT).show()
-//                }
-//            })
-//        }
-//
-//        val currentIme = System.currentTimeMillis()
-//        val currentPattern = SimpleDateFormat("HH:mm:ss").format(currentIme)
-//        val currentImeTime = currentPattern.split(":")
-//        val currentImeInHour = ((currentImeTime[0].toInt()) * 3600)
-//        val currentImeInMin = ((currentImeTime[1].toInt()) * 60)
-//        val currentImeInSec = currentImeTime[2].toInt()
-//
-//        val currentValInMin = (currentImeInHour + currentImeInMin + currentImeInSec) / 60
-//
-//        Log.d("currrrrrentTime", currentValInMin.toString())
-//        Log.d("interactedTiiiiiime", interactionTime.toString())
-//    }
-//}
