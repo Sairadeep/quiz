@@ -23,9 +23,9 @@ import java.text.SimpleDateFormat
 
 class LoginActivity : InActivity() {
     private lateinit var loginBinding: ActivityLoginBinding
-    lateinit var googleSignInClient: GoogleSignInClient
-    lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
-    var loggedInTime: Long = 0L
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    private var loggedInTime: Long = 0L
 
 
     @SuppressLint("SetTextI18n")
@@ -73,7 +73,7 @@ class LoginActivity : InActivity() {
                 loggedInTime = System.currentTimeMillis()
                 val loggedInDate = SimpleDateFormat("HH:mm:ss").format(loggedInTime)
                 loginTime(loggedInDate)
-                // Log.d("loggedInTime", loggedInTime.toString())
+                //Log.d("loggedInTime", loggedInTime.toString())
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 finish()

@@ -32,5 +32,4 @@ class QuizViewModel(private val dataRepository: Repository = Repository()) : Vie
         }
     }
 
-
 }

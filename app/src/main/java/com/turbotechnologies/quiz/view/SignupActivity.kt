@@ -5,13 +5,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
 import com.turbotechnologies.quiz.databinding.ActivitySignupBinding
+import java.text.SimpleDateFormat
 
-class SignupActivity : AppCompatActivity() {
-    lateinit var signupBinding: ActivitySignupBinding
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+class SignupActivity : InActivity() {
+    private lateinit var signupBinding: ActivitySignupBinding
+    private var time: Long = 0L
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +49,15 @@ class SignupActivity : AppCompatActivity() {
                 ).show()
             }
         }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    override fun onUserInteraction() {
+        time = System.currentTimeMillis()
+        val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
+        val interactedAtTime = currentTime(interactedTime)
+        sendInteractedTime(interactedAtTime)
+        super.onUserInteraction()
     }
 
 }

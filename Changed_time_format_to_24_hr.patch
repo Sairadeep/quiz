@@ -1,0 +1,196 @@
+Index: app/src/main/java/com/turbotechnologies/quiz/view/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/turbotechnologies/quiz/view/MainActivity.kt b/app/src/main/java/com/turbotechnologies/quiz/view/MainActivity.kt
+--- a/app/src/main/java/com/turbotechnologies/quiz/view/MainActivity.kt	(revision 909429f459ebe6bf997cdccb561ae0c1dff18016)
++++ b/app/src/main/java/com/turbotechnologies/quiz/view/MainActivity.kt	(date 1690977575035)
+@@ -20,7 +20,7 @@
+ 
+     lateinit var dataView: QuizViewModel
+     lateinit var mainBinding: ActivityMainBinding
+-    var time : Long = 0L
++    private var time : Long = 0L
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+Index: app/src/main/java/com/turbotechnologies/quiz/viewModel/QuizViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/turbotechnologies/quiz/viewModel/QuizViewModel.kt b/app/src/main/java/com/turbotechnologies/quiz/viewModel/QuizViewModel.kt
+--- a/app/src/main/java/com/turbotechnologies/quiz/viewModel/QuizViewModel.kt	(revision 909429f459ebe6bf997cdccb561ae0c1dff18016)
++++ b/app/src/main/java/com/turbotechnologies/quiz/viewModel/QuizViewModel.kt	(date 1690977574996)
+@@ -19,6 +19,15 @@
+     val wa: LiveData<Int>
+         get() = wrongInput
+ 
++    private val logged = MutableLiveData<String>()
++    val loggedAt : LiveData<String>
++    get() = logged
++
++    private val interacted = MutableLiveData<String>()
++    val interactedAt : LiveData<String>
++    get() = interacted
++
++
+     fun qnestions() {
+         dataRepository.qns { questions ->
+             qns.value = questions
+@@ -32,5 +41,13 @@
+         }
+     }
+ 
++    fun logsDetails(){
++            dataRepository.timeValue { logTime, interTime ->
++                logged.value = logTime
++                interacted.value = interTime
++            }
++
++    }
++
+ 
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/turbotechnologies/quiz/model/Repository.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/turbotechnologies/quiz/model/Repository.kt b/app/src/main/java/com/turbotechnologies/quiz/model/Repository.kt
+--- a/app/src/main/java/com/turbotechnologies/quiz/model/Repository.kt	(revision 909429f459ebe6bf997cdccb561ae0c1dff18016)
++++ b/app/src/main/java/com/turbotechnologies/quiz/model/Repository.kt	(date 1690977574985)
+@@ -9,9 +9,14 @@
+     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+     private val qnsReference: DatabaseReference = database.reference.child("questions")
+     private val scoreReference: DatabaseReference = database.reference.child("scores")
++    private val timeReference: DatabaseReference = database.reference.child("usersLogEntry")
++    private val user = auth.currentUser
++    val userId = user?.uid
+     var correctScore = 0
+     var wrongScore = 0
+     var availableQuestions = 0
++    lateinit var logInTime: String
++    lateinit var lastUserInteractedAt: String
+ 
+     fun qns(qnDatas: (questions: List<Map<String, String>>) -> Unit) {
+         qnsReference.addValueEventListener(object : ValueEventListener {
+@@ -29,8 +34,8 @@
+                         snapshot.child("qn$qnNo").child("answer").value.toString()
+                     qns.add(qnData)
+                 }
+-                Log.d("qns",qns.toString())
+-                Log.d("qnsCount",qns.size.toString())
++                Log.d("qns", qns.toString())
++                Log.d("qnsCount", qns.size.toString())
+                 qnDatas(qns)
+             }
+ 
+@@ -41,8 +46,6 @@
+     }
+ 
+     fun score(scoreInfo: (Correct: Int, Wrong: Int) -> Unit) {
+-        val user = auth.currentUser
+-        val userId = user?.uid
+         scoreReference.addValueEventListener(object : ValueEventListener {
+             override fun onDataChange(snapshot: DataSnapshot) {
+                 correctScore =
+@@ -57,7 +60,22 @@
+                 TODO("Not yet implemented")
+             }
+         })
+-
++    }
++
++    fun timeValue(timeDetails: (logTime: String, interTime: String) -> Unit) {
++        timeReference.addValueEventListener(object : ValueEventListener {
++            override fun onDataChange(snapshot: DataSnapshot) {
++                logInTime =
++                    snapshot.child(userId.toString()).child("LoggedInTime").value.toString()
++                lastUserInteractedAt =
++                    snapshot.child(userId.toString()).child("lastInteractedAt").value.toString()
++                timeDetails(logInTime, lastUserInteractedAt)
++            }
++
++            override fun onCancelled(error: DatabaseError) {
++                TODO("Not yet implemented")
++            }
++        })
++    }
+ 
+-    }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/turbotechnologies/quiz/view/InActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/turbotechnologies/quiz/view/InActivity.kt b/app/src/main/java/com/turbotechnologies/quiz/view/InActivity.kt
+--- a/app/src/main/java/com/turbotechnologies/quiz/view/InActivity.kt	(revision 909429f459ebe6bf997cdccb561ae0c1dff18016)
++++ b/app/src/main/java/com/turbotechnologies/quiz/view/InActivity.kt	(date 1690980641647)
+@@ -7,24 +7,57 @@
+ import com.google.firebase.database.DatabaseReference
+ import com.google.firebase.database.FirebaseDatabase
+ import com.turbotechnologies.quiz.R
++import com.turbotechnologies.quiz.viewModel.QuizViewModel
+ 
+ open class InActivity : AppCompatActivity() {
+-    val auth : FirebaseAuth = FirebaseAuth.getInstance()
+-    private val database : FirebaseDatabase = FirebaseDatabase.getInstance()
+-    private val logUserTime : DatabaseReference = database.reference.child("usersLogEntry")
++    val auth: FirebaseAuth = FirebaseAuth.getInstance()
++    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
++    lateinit var times: QuizViewModel
++    private var actualLogTimeInSeconds = 0
++    private var actualTimeOfInteractionInSeconds = 0
++    private var logUserTime: DatabaseReference? = null
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContentView(R.layout.activity_in)
++
++        logUserTime = database.reference.child("usersLogEntry")
++
++
++        times.loggedAt.observe(this) { userTime ->
++            val loggedInTime: String = userTime
++            val timeSplit = loggedInTime.split(":")
++            val timeAtHour = timeSplit[0].toInt()
++            val timeAtMinutes = timeSplit[1].toInt()
++            val timeAtSec = timeSplit[2].toInt()
++            actualLogTimeInSeconds =
++                ((timeAtHour * 3600) + (timeAtMinutes * 60) + (timeAtSec))
++        }
++
++        times.interactedAt.observe(this) { userTime ->
++            val interactedTime: String = userTime
++            val interactTimeSplit = interactedTime.split(":")
++            val interactTimeAtHour = interactTimeSplit[0].toInt()
++            val interactTimeAtMinutes = interactTimeSplit[1].toInt()
++            val interactTimeAtSec = interactTimeSplit[2].toInt()
++            actualTimeOfInteractionInSeconds =
++                ((interactTimeAtHour * 3600) + (interactTimeAtMinutes * 60) + (interactTimeAtSec))
++            Log.d("actualLogTimeInSeconds", actualLogTimeInSeconds.toString())
++            Log.d("actualTimeOfInteraction", actualTimeOfInteractionInSeconds.toString())
++        }
++
++        times.logsDetails()
+     }
++
+ 
+-    open fun loginTime(LogTime : String){
++    open fun loginTime(LogTime: String) {
+         logUserTime.child(auth.currentUser?.uid.toString()).child("LoggedInTime")
+             .setValue(LogTime).addOnCompleteListener {
+                 Log.d("loggedInTime", LogTime)
+             }
+     }
+ 
+-    open fun userInteractedTime(userInteraction : String){
++    open fun userInteractedTime(userInteraction: String) {
+         logUserTime.child(auth.currentUser?.uid.toString()).child("lastInteractedAt")
+             .setValue(userInteraction).addOnCompleteListener {
+                 Log.d("lastInteractedAt", userInteraction)

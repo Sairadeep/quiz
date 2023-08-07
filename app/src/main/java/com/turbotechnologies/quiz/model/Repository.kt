@@ -9,6 +9,8 @@ class Repository {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val qnsReference: DatabaseReference = database.reference.child("questions")
     private val scoreReference: DatabaseReference = database.reference.child("scores")
+    private val user = auth.currentUser
+    val userId = user?.uid
     var correctScore = 0
     var wrongScore = 0
     var availableQuestions = 0
@@ -29,8 +31,8 @@ class Repository {
                         snapshot.child("qn$qnNo").child("answer").value.toString()
                     qns.add(qnData)
                 }
-                Log.d("qns",qns.toString())
-                Log.d("qnsCount",qns.size.toString())
+                Log.d("qns", qns.toString())
+                Log.d("qnsCount", qns.size.toString())
                 qnDatas(qns)
             }
 
@@ -41,8 +43,6 @@ class Repository {
     }
 
     fun score(scoreInfo: (Correct: Int, Wrong: Int) -> Unit) {
-        val user = auth.currentUser
-        val userId = user?.uid
         scoreReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 correctScore =
@@ -57,7 +57,6 @@ class Repository {
                 TODO("Not yet implemented")
             }
         })
-
-
     }
+
 }

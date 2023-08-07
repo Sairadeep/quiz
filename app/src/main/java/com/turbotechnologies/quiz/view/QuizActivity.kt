@@ -1,8 +1,8 @@
 package com.turbotechnologies.quiz.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -12,14 +12,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityQuizBinding
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
+import java.text.SimpleDateFormat
 import kotlin.random.Random
 
-class QuizActivity : AppCompatActivity() {
+class QuizActivity : InActivity() {
     lateinit var
             quizBinding: ActivityQuizBinding
     private val handler = Handler(Looper.getMainLooper())
@@ -35,9 +35,9 @@ class QuizActivity : AppCompatActivity() {
     var timeLeft =
         totalTime
     var index = 0
+    private var time: Long = 0L
     var qnSet = HashSet<Int>()
     private lateinit var currentQn: Map<String, String>
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val user = auth.currentUser
     private val scoreRef = database.reference
 
@@ -149,7 +149,7 @@ class QuizActivity : AppCompatActivity() {
         var qnIndex = 0
         qnData.question.observe(this) { qn ->
             val currentCount = qn.size
-             qnIndex = qnSet.elementAt(index)
+            qnIndex = qnSet.elementAt(index)
             currentQn = qn[qnIndex]
             quizBinding.textViewQuestion.text = currentQn["qn"]
             quizBinding.textViewOptionA.text = currentQn["optA"]
@@ -300,5 +300,14 @@ class QuizActivity : AppCompatActivity() {
             finish()
         }
         dialogMessage.create().show()
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    override fun onUserInteraction() {
+        time = System.currentTimeMillis()
+        val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
+        val interactedAtTime = currentTime(interactedTime)
+        sendInteractedTime(interactedAtTime)
+        super.onUserInteraction()
     }
 }

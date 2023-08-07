@@ -11,7 +11,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityMainBinding
-import com.turbotechnologies.quiz.services.DataSyncService
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
 import java.text.SimpleDateFormat
 
@@ -20,17 +19,15 @@ class MainActivity : InActivity() {
 
     lateinit var dataView: QuizViewModel
     lateinit var mainBinding: ActivityMainBinding
-    var time : Long = 0L
+    private var time: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = mainBinding.root
         setContentView(view)
         dataView = ViewModelProvider(this)[QuizViewModel::class.java]
-
-            //startService(Intent(this@MainActivity, LogOutService::class.java))
-        startService(Intent(this, DataSyncService::class.java))
 
         mainBinding.buttonStartQuiz.setOnClickListener {
             val intent = Intent(this@MainActivity, QuizActivity::class.java)
@@ -39,14 +36,6 @@ class MainActivity : InActivity() {
         }
     }
 
-//    override fun onUserInteraction() {
-//        val main = BaseActivity()
-//        time = System.currentTimeMillis()
-//        main.lastUserInteractedAt(time)
-//       Log.d("TimeInMainActivity",time.toString())
-//        super.onUserInteraction()
-//    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(
             R.menu.menu_signout,
@@ -54,6 +43,7 @@ class MainActivity : InActivity() {
         )
         return true
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.item_logout) {
@@ -90,8 +80,9 @@ class MainActivity : InActivity() {
     @SuppressLint("SimpleDateFormat")
     override fun onUserInteraction() {
         time = System.currentTimeMillis()
-        val interactedTime = SimpleDateFormat("HH:mm:ss").format(time)
-        userInteractedTime(interactedTime.toString())
+        val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
+        val interactedAtTime = currentTime(interactedTime)
+        sendInteractedTime(interactedAtTime)
         super.onUserInteraction()
     }
 
