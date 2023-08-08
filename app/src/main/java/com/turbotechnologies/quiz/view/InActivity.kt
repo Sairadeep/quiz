@@ -1,6 +1,5 @@
 package com.turbotechnologies.quiz.view
 
-
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -38,7 +37,7 @@ open class InActivity : AppCompatActivity() {
     }
 
     fun sendInteractedTime(interactedTime: Int) {
-        if(auth.currentUser != null){
+        if (auth.currentUser != null) {
             sharedPreferences = this.getSharedPreferences(
                 "interactionTime",
                 Context.MODE_PRIVATE
@@ -49,7 +48,6 @@ open class InActivity : AppCompatActivity() {
             Log.d("SendingData", interactedTime.toString())
         }
     }
-
 
     fun currentTime(timeValue: String): Int {
         val currentTimValue = timeValue.split(":")
