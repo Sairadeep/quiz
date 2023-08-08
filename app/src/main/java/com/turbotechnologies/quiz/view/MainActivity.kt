@@ -3,6 +3,7 @@ package com.turbotechnologies.quiz.view
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -11,6 +12,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityMainBinding
+import com.turbotechnologies.quiz.services.DataSyncService
+import com.turbotechnologies.quiz.services.LogOutService
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
 import java.text.SimpleDateFormat
 
@@ -28,6 +31,11 @@ class MainActivity : InActivity() {
         val view = mainBinding.root
         setContentView(view)
         dataView = ViewModelProvider(this)[QuizViewModel::class.java]
+
+        if (auth.currentUser != null) {
+            startService(Intent(this@MainActivity, LogOutService::class.java))
+            startService(Intent(this@MainActivity, DataSyncService::class.java))
+        }
 
         mainBinding.buttonStartQuiz.setOnClickListener {
             val intent = Intent(this@MainActivity, QuizActivity::class.java)
@@ -82,6 +90,7 @@ class MainActivity : InActivity() {
         time = System.currentTimeMillis()
         val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
         val interactedAtTime = currentTime(interactedTime)
+        Log.d("CheckedMainTime", interactedAtTime.toString())
         sendInteractedTime(interactedAtTime)
         super.onUserInteraction()
     }

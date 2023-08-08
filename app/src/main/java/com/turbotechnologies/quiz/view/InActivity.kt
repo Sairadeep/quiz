@@ -2,17 +2,15 @@ package com.turbotechnologies.quiz.view
 
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.turbotechnologies.quiz.R
-import com.turbotechnologies.quiz.services.DataSyncService
-import com.turbotechnologies.quiz.services.LogOutService
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
 
 
@@ -30,10 +28,6 @@ open class InActivity : AppCompatActivity() {
         times = ViewModelProvider(this)[QuizViewModel::class.java]
         sendInteractedTime(interactedAt)
 
-        if (auth.currentUser != null) {
-            startService(Intent(this@InActivity, LogOutService::class.java))
-            startService(Intent(this, DataSyncService::class.java))
-        }
     }
 
     open fun loginTime(LogTime: String) {
@@ -44,14 +38,16 @@ open class InActivity : AppCompatActivity() {
     }
 
     fun sendInteractedTime(interactedTime: Int) {
-        sharedPreferences = this.getSharedPreferences(
-            "interactionTime",
-            Context.MODE_PRIVATE
-        )
-        val editor = sharedPreferences.edit()
-        editor.putInt("interaction", interactedTime)
-        editor.apply()
-        Log.d("SendingData", interactedTime.toString())
+        if(auth.currentUser != null){
+            sharedPreferences = this.getSharedPreferences(
+                "interactionTime",
+                Context.MODE_PRIVATE
+            )
+            val editor = sharedPreferences.edit()
+            editor.putInt("interaction", interactedTime)
+            editor.apply()
+            Log.d("SendingData", interactedTime.toString())
+        }
     }
 
 

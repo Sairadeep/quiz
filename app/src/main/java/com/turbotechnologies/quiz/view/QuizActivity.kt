@@ -55,7 +55,9 @@ class QuizActivity : InActivity() {
         Log.d("qnSet", qnSet.toString())
 
         quizBinding.buttonFinish.setOnClickListener {
+            timerContinue = false
             sendScoreToDB()
+            resetTimer()
         }
         quizBinding.buttonNextQn.setOnClickListener {
             if ((quizBinding.textViewOptionA.currentTextColor == Color.GREEN) ||
@@ -307,6 +309,7 @@ class QuizActivity : InActivity() {
         time = System.currentTimeMillis()
         val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
         val interactedAtTime = currentTime(interactedTime)
+        Log.d("CheckedQATime", interactedAtTime.toString())
         sendInteractedTime(interactedAtTime)
         super.onUserInteraction()
     }

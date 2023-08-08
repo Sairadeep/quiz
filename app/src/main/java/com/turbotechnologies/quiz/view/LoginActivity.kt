@@ -83,23 +83,10 @@ class LoginActivity : InActivity() {
                     task.exception?.localizedMessage,
                     Toast.LENGTH_SHORT
                 ).show()
+                loginBinding.progressBar4.visibility = View.INVISIBLE
             }
         }
     }
-
-//    override fun onStart() {
-//        super.onStart()
-//        val user = auth.currentUser
-//        if (user != null) {
-//            Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
-//                .show()
-//            Log.d("current", "Main Activity")
-//            // After logging, opening the main activity
-//            val intent = Intent(this@LoginActivity, MainActivity::class.java)
-//            startActivity(intent)
-//            finish()
-//        }
-//    }
 
     private fun signInGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -168,6 +155,7 @@ class LoginActivity : InActivity() {
                     task.exception?.localizedMessage,
                     Toast.LENGTH_SHORT
                 ).show()
+                loginBinding.progressBar4.visibility = View.INVISIBLE
             }
         }
     }

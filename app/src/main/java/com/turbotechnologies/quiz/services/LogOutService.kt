@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.CountDownTimer
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -24,50 +26,66 @@ class LogOutService : Service() {
 
     private lateinit var sharedPreferences: SharedPreferences
 
-    var interacted: Int = 0
-
     @SuppressLint("SimpleDateFormat")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         sharedPreferences = this.getSharedPreferences("interactionTime", Context.MODE_PRIVATE)
-        Toast.makeText(applicationContext, "Service Started", Toast.LENGTH_SHORT).show()
+       // Toast.makeText(applicationContext, "Service Started", Toast.LENGTH_SHORT).show()
 
-        timer = object : CountDownTimer(60000, 1000) {
+        timer = object : CountDownTimer(600000, 10000) {
             override fun onTick(p0: Long) {
-                interacted = sharedPreferences.getInt("interaction", 1)
+                var interacted = sharedPreferences.getInt("interaction", 1)
                 Log.d("interactedService", interacted.toString())
 
-                val currentTime =  System.currentTimeMillis()
+                val currentTime = System.currentTimeMillis()
                 val formattedTime = SimpleDateFormat("HH:mm:ss").format(currentTime)
                 val time = logoutService.currentTime(formattedTime)
-                Log.d("xyz",time.toString())
+                Log.d("xyz", time.toString())
 
+                if (interacted == 0) {
+                    interacted = time
+                    Log.d("IfZero", interacted.toString())
+                }
                 val timeDiff = time - interacted
+                Log.d("timeDiff", timeDiff.toString())
 
-                if(timeDiff == 0){
-                    val auth = FirebaseAuth.getInstance()
-                auth.signOut()
-                val gso =
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
-                        .build()
-                val googleSignInClient = GoogleSignIn.getClient(this@LogOutService, gso)
-
-                googleSignInClient.signOut().addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val intents = Intent(this@LogOutService, LoginActivity::class.java)
-                        intents.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intents)
-                    } else {
+                if (interacted != 0) {
+                    if (timeDiff > 2) {
                         Toast.makeText(
                             applicationContext,
-                            task.exception?.localizedMessage,
-                            Toast.LENGTH_LONG
+                            "You are about to logout, please perform any action on the device.",
+                            Toast.LENGTH_SHORT
                         ).show()
+                        val handler = Handler(Looper.getMainLooper())
+                        handler.postDelayed({ LogOutService::class.java }, 5000)
+                        val auth = FirebaseAuth.getInstance()
+                        auth.signOut()
+                        val gso =
+                            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestEmail()
+                                .build()
+                        val googleSignInClient = GoogleSignIn.getClient(this@LogOutService, gso)
+
+                        googleSignInClient.signOut().addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val intents = Intent(this@LogOutService, LoginActivity::class.java)
+                                intents.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                startActivity(intents)
+                            } else {
+                                Toast.makeText(
+                                    applicationContext,
+                                    task.exception?.localizedMessage,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    } else {
+                        Log.d("yetToDo", "Yet To Perform a logout")
                     }
                 }
-                }
-            }
 
+
+            }
 
             override fun onFinish() {
                 timer.start()
