@@ -1,5 +1,6 @@
 package com.turbotechnologies.quiz.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -19,7 +20,7 @@ open class InActivity : AppCompatActivity() {
     lateinit var times: QuizViewModel
     private var logUserTime: DatabaseReference = database.reference.child("usersLogEntry")
     private lateinit var sharedPreferences: SharedPreferences
-    private var interactedAt: Int = 0
+    private var interactedAt: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,24 +37,24 @@ open class InActivity : AppCompatActivity() {
             }
     }
 
-    fun sendInteractedTime(interactedTime: Int) {
+    private fun sendInteractedTime(interactedTime: Long) {
         if (auth.currentUser != null) {
             sharedPreferences = this.getSharedPreferences(
                 "interactionTime",
                 Context.MODE_PRIVATE
             )
             val editor = sharedPreferences.edit()
-            editor.putInt("interaction", interactedTime)
+            editor.putLong("interaction", interactedTime)
             editor.apply()
             Log.d("SendingData", interactedTime.toString())
         }
     }
 
-    fun currentTime(timeValue: String): Int {
-        val currentTimValue = timeValue.split(":")
-        val currentTimeInHours = currentTimValue[0].toInt()
-        val currentTimeInMin = currentTimValue[1].toInt()
-        val currentTimeInSec = currentTimValue[2].toInt()
-        return ((currentTimeInHours * 3600) + (currentTimeInMin * 60) + (currentTimeInSec)) / 60
+    @SuppressLint("SimpleDateFormat")
+    override fun onUserInteraction() {
+       val time = System.currentTimeMillis()
+        sendInteractedTime(time)
+        super.onUserInteraction()
     }
+
 }

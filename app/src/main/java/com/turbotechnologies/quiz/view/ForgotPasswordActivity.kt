@@ -1,14 +1,11 @@
 package com.turbotechnologies.quiz.view
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import com.turbotechnologies.quiz.databinding.ActivityForgotPasswordBinding
-import java.text.SimpleDateFormat
 
 class ForgotPasswordActivity : InActivity() {
     private lateinit var forgotPasswordBinding: ActivityForgotPasswordBinding
-    private var time: Long = 0L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         forgotPasswordBinding = ActivityForgotPasswordBinding.inflate(layoutInflater)
@@ -38,14 +35,4 @@ class ForgotPasswordActivity : InActivity() {
             }
         }
     }
-
-    @SuppressLint("SimpleDateFormat")
-    override fun onUserInteraction() {
-        time = System.currentTimeMillis()
-        val interactedTime : String = SimpleDateFormat("HH:mm:ss").format(time).toString()
-        val interactedAtTime = currentTime(interactedTime)
-        sendInteractedTime(interactedAtTime)
-        super.onUserInteraction()
-    }
-
 }

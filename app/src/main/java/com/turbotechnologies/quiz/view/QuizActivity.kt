@@ -1,6 +1,5 @@
 package com.turbotechnologies.quiz.view
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -16,7 +15,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityQuizBinding
 import com.turbotechnologies.quiz.viewModel.QuizViewModel
-import java.text.SimpleDateFormat
 import kotlin.random.Random
 
 class QuizActivity : InActivity() {
@@ -35,7 +33,6 @@ class QuizActivity : InActivity() {
     var timeLeft =
         totalTime
     var index = 0
-    private var time: Long = 0L
     var qnSet = HashSet<Int>()
     private lateinit var currentQn: Map<String, String>
     private val user = auth.currentUser
@@ -302,15 +299,5 @@ class QuizActivity : InActivity() {
             finish()
         }
         dialogMessage.create().show()
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    override fun onUserInteraction() {
-        time = System.currentTimeMillis()
-        val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
-        val interactedAtTime = currentTime(interactedTime)
-        Log.d("CheckedQATime", interactedAtTime.toString())
-        sendInteractedTime(interactedAtTime)
-        super.onUserInteraction()
     }
 }

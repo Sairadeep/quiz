@@ -6,11 +6,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import com.turbotechnologies.quiz.databinding.ActivitySignupBinding
-import java.text.SimpleDateFormat
 
 class SignupActivity : InActivity() {
     private lateinit var signupBinding: ActivitySignupBinding
-    private var time: Long = 0L
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,15 +48,5 @@ class SignupActivity : InActivity() {
             }
         }
     }
-
-    @SuppressLint("SimpleDateFormat")
-    override fun onUserInteraction() {
-        time = System.currentTimeMillis()
-        val interactedTime: String = SimpleDateFormat("HH:mm:ss").format(time).toString()
-        val interactedAtTime = currentTime(interactedTime)
-        sendInteractedTime(interactedAtTime)
-        super.onUserInteraction()
-    }
-
 }
 

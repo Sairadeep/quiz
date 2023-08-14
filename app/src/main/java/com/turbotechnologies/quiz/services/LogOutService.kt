@@ -14,16 +14,12 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.turbotechnologies.quiz.view.InActivity
 import com.turbotechnologies.quiz.view.LoginActivity
-import java.text.SimpleDateFormat
 
 
 class LogOutService : Service() {
 
     private lateinit var timer: CountDownTimer
-    private val logoutService: InActivity = InActivity()
-
     private lateinit var sharedPreferences: SharedPreferences
 
     @SuppressLint("SimpleDateFormat")
@@ -34,23 +30,23 @@ class LogOutService : Service() {
 
         timer = object : CountDownTimer(600000, 10000) {
             override fun onTick(p0: Long) {
-                var interacted = sharedPreferences.getInt("interaction", 1)
+                var interacted = sharedPreferences.getLong("interaction", 0L)
                 Log.d("interactedService", interacted.toString())
 
                 val currentTime = System.currentTimeMillis()
-                val formattedTime = SimpleDateFormat("HH:mm:ss").format(currentTime)
-                val time = logoutService.currentTime(formattedTime)
-                Log.d("xyz", time.toString())
+//                val formattedTime = SimpleDateFormat("HH:mm:ss").format(currentTime)
+//                val time = logoutService.currentTime(formattedTime)
+                Log.d("xyz", currentTime.toString())
 
-                if (interacted == 0) {
-                    interacted = time
+                if (interacted == 0L) {
+                    interacted = currentTime
                     Log.d("IfZero", interacted.toString())
                 }
-                val timeDiff = time - interacted
+                val timeDiff = (currentTime - interacted) / (60000)
                 Log.d("timeDiff", timeDiff.toString())
 
-                if (interacted != 0) {
-                    if (timeDiff > 2) {
+                if (interacted != 0L) {
+                    if (timeDiff > 1) {
                         Toast.makeText(
                             applicationContext,
                             "You are about to logout, please perform any action on the device.",
@@ -79,12 +75,12 @@ class LogOutService : Service() {
                                 ).show()
                             }
                         }
+                        timer.cancel()
                     } else {
                         Log.d("yetToDo", "Yet To Perform a logout")
                     }
+                    stopSelf()
                 }
-
-
             }
 
             override fun onFinish() {
