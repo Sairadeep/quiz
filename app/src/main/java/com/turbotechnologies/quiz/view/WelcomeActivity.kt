@@ -20,7 +20,7 @@ class WelcomeActivity : AppCompatActivity() {
             applicationContext,
             R.anim.splash_anim
         )
-        splashBinding.imageViewSplash.startAnimation(alphaAnimation)
+        splashBinding.layout.startAnimation(alphaAnimation)
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed(
             {
@@ -28,7 +28,7 @@ class WelcomeActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             },
-            5000
+            1500
         )
     }
 }

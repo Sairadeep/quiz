@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.turbotechnologies.quiz"
-        minSdk 21
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -50,11 +50,13 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     // Dependencies for FireBase Authentication library
-    implementation 'com.google.firebase:firebase-auth-ktx:22.1.0'
+    implementation 'com.google.firebase:firebase-auth-ktx:22.1.1'
     // Dependency for google play services library -> It will be useful for adding a special button designed for google sign in.
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
     // Work Manager with coroutines
     implementation "androidx.work:work-runtime-ktx:2.8.1"
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
+//    implementation 'com.github.bumptech.glide:glide:4.12.0'
+//    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 }
