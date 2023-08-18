@@ -2,9 +2,11 @@ package com.turbotechnologies.quiz.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -17,8 +19,9 @@ import com.turbotechnologies.quiz.viewModel.QuizViewModel
 
 class MainActivity : InActivity() {
 
-    lateinit var dataView: QuizViewModel
-    lateinit var mainBinding: ActivityMainBinding
+    private lateinit var dataView: QuizViewModel
+    private lateinit var mainBinding: ActivityMainBinding
+    var timeReceived = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +37,13 @@ class MainActivity : InActivity() {
         }
 
         mainBinding.buttonStartQuiz.setOnClickListener {
+           val totalTime = timerData(timeReceived).toInt()
+            Log.d("KnowingValue", totalTime.toString())
             val intent = Intent(this@MainActivity, QuizActivity::class.java)
+            if(totalTime == 0) {
+                intent.putExtra("timeValue", 25)
+            }
+            intent.putExtra("timeValue", totalTime)
             startActivity(intent)
             finish()
         }
@@ -45,9 +54,8 @@ class MainActivity : InActivity() {
             R.menu.menu_signout,
             menu
         )
-        return true
+            return true
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.item_logout) {
@@ -78,6 +86,22 @@ class MainActivity : InActivity() {
             startActivity(intent)
             finish()
         }
+        if (item.itemId == R.id.qnTimer) {
+            val fragmentManager: FragmentManager = supportFragmentManager
+            val qnTimerFragment = QnTimerFragment()
+            qnTimerFragment.isCancelable = false
+            qnTimerFragment.show(
+                fragmentManager,
+                "QnTimerFragment"
+            )
+        }
         return super.onOptionsItemSelected(item)
     }
+
+    fun timerData(selectedTime: Long): Long {
+        timeReceived = selectedTime
+        Log.d("timeReceived",timeReceived.toString())
+        return timeReceived
+    }
+
 }

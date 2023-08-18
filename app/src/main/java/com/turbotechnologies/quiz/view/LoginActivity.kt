@@ -63,6 +63,14 @@ class LoginActivity : InActivity() {
         }
     }
 
+    override fun onStart() {
+        if(auth.currentUser != null){
+            val intent : Intent = Intent(this,MainActivity::class.java)
+            startActivity(intent)
+        }
+        super.onStart()
+    }
+
 
     @SuppressLint("SimpleDateFormat")
     private fun signInUser(userEmail: String, userPassword: String) {

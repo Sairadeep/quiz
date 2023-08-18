@@ -34,7 +34,7 @@
         <activity
             android:name=".view.QuizActivity"
             android:exported="true"
-            android:theme="@style/SignUpTheme">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -67,7 +67,8 @@
         </activity>
         <activity
             android:name=".view.WelcomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

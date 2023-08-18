@@ -46,7 +46,7 @@ class LogOutService : Service() {
                 Log.d("timeDiff", timeDiff.toString())
 
                 if (interacted != 0L) {
-                    if (timeDiff > 1) {
+                    if (timeDiff > 2) {
                         Toast.makeText(
                             applicationContext,
                             "You are about to logout, please perform any action on the device.",

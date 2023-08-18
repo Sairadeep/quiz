@@ -1,5 +1,8 @@
 package com.turbotechnologies.quiz.view
 
+import android.animation.Animator
+import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -8,6 +11,9 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
@@ -18,22 +24,20 @@ import com.turbotechnologies.quiz.viewModel.QuizViewModel
 import kotlin.random.Random
 
 class QuizActivity : InActivity() {
-    lateinit var
-            quizBinding: ActivityQuizBinding
+    lateinit var quizBinding: ActivityQuizBinding
     private val handler = Handler(Looper.getMainLooper())
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    lateinit var qnData: QuizViewModel
-    var correctAnswer = ""
+    private lateinit var questionData: QuizViewModel
+    private var correctAnswer = ""
     private var userAnswer = ""
     private var userCorrectInputScore = 0
     private var userWrongInputScore = 0
     private lateinit var timer: CountDownTimer
-    private val totalTime = 25000L
+    private var totalTime = 0L
     var timerContinue = false
-    var timeLeft =
-        totalTime
-    var index = 0
-    var qnSet = HashSet<Int>()
+    var timeLeft = 0L
+    private var index = 0
+    private var qnSet = HashSet<Int>()
     private lateinit var currentQn: Map<String, String>
     private val user = auth.currentUser
     private val scoreRef = database.reference
@@ -43,110 +47,140 @@ class QuizActivity : InActivity() {
         quizBinding = ActivityQuizBinding.inflate(layoutInflater)
         val view = quizBinding.root
         setContentView(view)
-        qnData = ViewModelProvider(this)[QuizViewModel::class.java]
+        totalTime = intent.getIntExtra("timeValue", 0).toLong()
+        Log.d("ReceivedFromIntent", totalTime.toString())
+        timeLeft = totalTime * 1000
+        questionData = ViewModelProvider(this)[QuizViewModel::class.java]
         gameLogic()
+        overAllTimer()
         do {
             val number = Random.nextInt(1, 10)
             qnSet.add(number)
         } while (qnSet.size < 5)
         Log.d("qnSet", qnSet.toString())
+        setupOnClickListeners()
+    }
 
+    private fun setupOnClickListeners() {
         quizBinding.buttonFinish.setOnClickListener {
-            timerContinue = false
-            sendScoreToDB()
-            resetTimer()
+            handleFinish()
         }
         quizBinding.buttonNextQn.setOnClickListener {
-            if ((quizBinding.textViewOptionA.currentTextColor == Color.GREEN) ||
-                (quizBinding.textViewOptionB.currentTextColor == Color.GREEN) ||
-                (quizBinding.textViewOptionC.currentTextColor == Color.GREEN) ||
-                (quizBinding.textViewOptionD.currentTextColor == Color.GREEN)
-            ) {
-                resetTimer()
-                if (index < 4) {
-                    index++
-                    gameLogic()
-                    Log.d("index", index.toString())
-                } else {
-                    finalDialogMessage()
-                }
-            } else {
-                Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
-                    .show()
-            }
+            handleNextQuestion()
         }
         quizBinding.textViewOptionA.setOnClickListener {
-            pauseTimer()
-            userAnswer = "optA"
-            if (correctAnswer == userAnswer) {
-                quizBinding.textViewOptionA.setTextColor(Color.GREEN)
-                userCorrectInputScore++
-                quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
-            } else {
-                quizBinding.textViewOptionA.setTextColor(Color.RED)
-                userWrongInputScore++
-                quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
-                actualAnswer()
-            }
-            disableOptions()
-            handler.postDelayed(
-                {
-                    QuizActivity::class.java
-                    quizBinding.buttonNextQn.performClick()
-                }, 4000
-            )
+            handleOptionA()
         }
         quizBinding.textViewOptionB.setOnClickListener {
-            pauseTimer()
-            userAnswer = "optB"
-            if (correctAnswer == userAnswer) {
-                quizBinding.textViewOptionB.setTextColor(Color.GREEN)
-                userCorrectInputScore++
-                quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
-            } else {
-                quizBinding.textViewOptionB.setTextColor(Color.RED)
-                userWrongInputScore++
-                quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
-                actualAnswer()
-            }
-            disableOptions()
+            handleOptionB()
         }
         quizBinding.textViewOptionC.setOnClickListener {
-            pauseTimer()
-            userAnswer = "optC"
-            if (correctAnswer == userAnswer) {
-                quizBinding.textViewOptionC.setTextColor(Color.GREEN)
-                userCorrectInputScore++
-                quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
-            } else {
-                quizBinding.textViewOptionC.setTextColor(Color.RED)
-                userWrongInputScore++
-                quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
-                actualAnswer()
-            }
-            disableOptions()
+            handleOptionC()
         }
         quizBinding.textViewOptionD.setOnClickListener {
-            pauseTimer()
-            userAnswer = "optD"
-            if (correctAnswer == userAnswer) {
-                quizBinding.textViewOptionD.setTextColor(Color.GREEN)
-                userCorrectInputScore++
-                quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
-            } else {
-                quizBinding.textViewOptionD.setTextColor(Color.RED)
-                userWrongInputScore++
-                quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
-                actualAnswer()
-            }
-            disableOptions()
+            handleOptionD()
         }
+    }
+
+    private fun handleOptionD() {
+        pauseTimer()
+        userAnswer = "optD"
+        if (correctAnswer == userAnswer) {
+            quizBinding.textViewOptionD.setTextColor(Color.GREEN)
+            userCorrectInputScore++
+            quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
+        } else {
+            quizBinding.textViewOptionD.setTextColor(Color.RED)
+            userWrongInputScore++
+            quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
+            actualAnswer()
+        }
+        disableOptions()
+    }
+
+    private fun handleOptionC() {
+        pauseTimer()
+        userAnswer = "optC"
+        if (correctAnswer == userAnswer) {
+            quizBinding.textViewOptionC.setTextColor(Color.GREEN)
+            userCorrectInputScore++
+            quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
+        } else {
+            quizBinding.textViewOptionC.setTextColor(Color.RED)
+            userWrongInputScore++
+            quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
+            actualAnswer()
+        }
+        disableOptions()
+    }
+
+    private fun handleOptionB() {
+        pauseTimer()
+        userAnswer = "optB"
+        if (correctAnswer == userAnswer) {
+            quizBinding.textViewOptionB.setTextColor(Color.GREEN)
+            userCorrectInputScore++
+            quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
+        } else {
+            quizBinding.textViewOptionB.setTextColor(Color.RED)
+            userWrongInputScore++
+            quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
+            actualAnswer()
+        }
+        disableOptions()
+    }
+
+    private fun handleFinish() {
+        timerContinue = false
+        sendScoreToDB()
+        resetTimer()
+    }
+
+    private fun handleNextQuestion() {
+        if (didUserAttempt()) {
+            resetTimer()
+            if (index < 4) {
+                index++
+                gameLogic()
+                Log.d("index", index.toString())
+            } else {
+                finalDialogMessage()
+            }
+        } else {
+            Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    private fun didUserAttempt(): Boolean {
+        if ((quizBinding.textViewOptionA.currentTextColor == Color.GREEN) ||
+            (quizBinding.textViewOptionB.currentTextColor == Color.GREEN) ||
+            (quizBinding.textViewOptionC.currentTextColor == Color.GREEN) ||
+            (quizBinding.textViewOptionD.currentTextColor == Color.GREEN)
+        ) return true
+        return false
+    }
+
+    private fun handleOptionA() {
+        pauseTimer()
+        userAnswer = "optA"
+        if (correctAnswer == userAnswer) {
+            quizBinding.textViewOptionA.setTextColor(Color.GREEN)
+            userCorrectInputScore++
+            quizBinding.textViewRightAnswerCount.text = userCorrectInputScore.toString()
+        } else {
+            quizBinding.textViewOptionA.setTextColor(Color.RED)
+            userWrongInputScore++
+            quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
+            actualAnswer()
+        }
+        disableOptions()
     }
 
     private fun gameLogic() {
         restoreOptions()
         var qnIndex = 0
-        qnData.question.observe(this) { qn ->
+        questionData.question.observe(this) { qn ->
             val currentCount = qn.size
             qnIndex = qnSet.elementAt(index)
             currentQn = qn[qnIndex]
@@ -159,7 +193,7 @@ class QuizActivity : InActivity() {
             Log.d("Count:", currentCount.toString())
         }
         Log.d("qnNumber", qnIndex.toString())
-        qnData.qnestions()
+        questionData.qnestions()
 
         quizBinding.progressBarQnPage.visibility = View.INVISIBLE
         quizBinding.linearLayoutInfo.visibility = View.VISIBLE
@@ -223,8 +257,8 @@ class QuizActivity : InActivity() {
                 timeLeft =
                     millisUntilFinish
                 updateCountDownText()
-
             }
+
 
             override fun onFinish() {
                 resetTimer()
@@ -262,7 +296,7 @@ class QuizActivity : InActivity() {
 
     private fun resetTimer() {
         pauseTimer()
-        timeLeft = totalTime
+        timeLeft = totalTime * 1000
         updateCountDownText()
     }
 
@@ -290,14 +324,53 @@ class QuizActivity : InActivity() {
         dialogMessage.setTitle("Quiz Game")
         dialogMessage.setMessage("Congratulations!! \nYou have answered all the questions. Do you want to see the results?")
         dialogMessage.setCancelable(false)
-        dialogMessage.setPositiveButton("Result") { dialogInterface, i ->
+        dialogMessage.setPositiveButton("Result") { _, _ ->
             sendScoreToDB()
         }
-        dialogMessage.setNegativeButton("Play Again") { dialogInterface, i ->
+        dialogMessage.setNegativeButton("Play Again") { _, _ ->
             val intent = Intent(this@QuizActivity, MainActivity::class.java)
             startActivity(intent)
             finish()
         }
         dialogMessage.create().show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun overAllTimer() {
+        val textTime: TextView = quizBinding.toolbarTimer
+        val title: TextView = quizBinding.toolbarTitle
+        title.text = "Quiz Game"
+        val timerProgress: ProgressBar = quizBinding.progressBarOverall
+        val timeAnimator: ValueAnimator = ValueAnimator.ofInt(
+            0, 100
+        )
+        timeAnimator.duration = totalTime * 5000
+        timeAnimator.interpolator = LinearInterpolator()
+        timeAnimator.addUpdateListener {
+            val value = it.animatedValue as Int
+            timerProgress.progress = value
+            Log.d("progress", value.toString())
+            textTime.text = ((totalTime * 5) - value).toString()
+        }
+        timeAnimator.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(p0: Animator) {
+                Log.d("onAnimationStart", "Animation has been started.")
+            }
+
+            override fun onAnimationEnd(p0: Animator) {
+                Log.d("onAnimationEnd", "Animation has been ended.")
+                val intent = Intent(this@QuizActivity, ResultActivity::class.java)
+                startActivity(intent)
+            }
+
+            override fun onAnimationCancel(p0: Animator) {
+                Log.d("onAnimationCancel", "Animation has been cancelled.")
+            }
+
+            override fun onAnimationRepeat(p0: Animator) {
+                Log.d("onAnimationRepeat", "Animation is being repeated.")
+            }
+        })
+        timeAnimator.start()
     }
 }
