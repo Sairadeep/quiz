@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import com.turbotechnologies.quiz.databinding.ActivitySignupBinding
 
 class SignupActivity : InActivity() {
@@ -19,7 +20,23 @@ class SignupActivity : InActivity() {
         signupBinding.buttonSignUp.setOnClickListener {
             val email = signupBinding.editTextSignUpEmail.text.toString()
             val password = signupBinding.editTextSignUpPassword.text.toString()
-            signUpWithFireBase(email, password)
+            if (email.isNotEmpty()) {
+                if (password.isNotEmpty()) {
+                    signUpWithFireBase(email, password)
+                } else {
+                    Snackbar.make(
+                        signupBinding.signUpLayout,
+                        "Password is required while performing a signup.",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            }else {
+                Snackbar.make(
+                    signupBinding.signUpLayout,
+                    "Username is required while performing a signup.",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
