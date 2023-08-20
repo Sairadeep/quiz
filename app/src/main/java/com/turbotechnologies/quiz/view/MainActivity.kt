@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.material.snackbar.Snackbar
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityMainBinding
 import com.turbotechnologies.quiz.services.DataSyncService
@@ -25,7 +26,6 @@ class MainActivity : InActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = mainBinding.root
         setContentView(view)
@@ -36,12 +36,19 @@ class MainActivity : InActivity() {
             startService(Intent(this@MainActivity, DataSyncService::class.java))
         }
 
+        Snackbar.make(
+            mainBinding.mainActivityLayout,
+            "Choose the question timer from the vertical ellipsis option " + "⋮",
+            Snackbar.LENGTH_LONG
+        ).show()
+
         mainBinding.buttonStartQuiz.setOnClickListener {
-           val totalTime = timerData(timeReceived).toInt()
+            var totalTime = timerData(timeReceived).toInt()
             Log.d("KnowingValue", totalTime.toString())
             val intent = Intent(this@MainActivity, QuizActivity::class.java)
-            if(totalTime == 0) {
-                intent.putExtra("timeValue", 25)
+            if (totalTime == 0) {
+                totalTime = 25
+                intent.putExtra("timeValue", totalTime)
             }
             intent.putExtra("timeValue", totalTime)
             startActivity(intent)
@@ -54,7 +61,7 @@ class MainActivity : InActivity() {
             R.menu.menu_signout,
             menu
         )
-            return true
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -100,7 +107,7 @@ class MainActivity : InActivity() {
 
     fun timerData(selectedTime: Long): Long {
         timeReceived = selectedTime
-        Log.d("timeReceived",timeReceived.toString())
+        Log.d("timeReceived", timeReceived.toString())
         return timeReceived
     }
 

@@ -16,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.GoogleAuthProvider
 import com.turbotechnologies.quiz.R
 import com.turbotechnologies.quiz.databinding.ActivityLoginBinding
@@ -46,8 +47,25 @@ class LoginActivity : InActivity() {
         loginBinding.buttonSignIn.setOnClickListener {
             val userEmail = loginBinding.editTextLoginEmail.text.toString()
             val userPassword = loginBinding.editTextLoginPassword.text.toString()
-            loginBinding.progressBar4.visibility = View.VISIBLE
-            signInUser(userEmail, userPassword)
+            if (userEmail.isNotEmpty()) {
+                if (userPassword.isNotEmpty()) {
+                    loginBinding.progressBar4.visibility = View.VISIBLE
+                    signInUser(userEmail, userPassword)
+                } else {
+                    Snackbar.make(
+                        loginBinding.loginLayout,
+                        "Password is mandatory.",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            }else{
+                Snackbar.make(
+                    loginBinding.loginLayout,
+                    "Username is mandatory.",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+
         }
         loginBinding.buttonGoogleSignIn.setOnClickListener {
             signInGoogle()
@@ -64,8 +82,8 @@ class LoginActivity : InActivity() {
     }
 
     override fun onStart() {
-        if(auth.currentUser != null){
-            val intent : Intent = Intent(this,MainActivity::class.java)
+        if (auth.currentUser != null) {
+            val intent: Intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
         super.onStart()
