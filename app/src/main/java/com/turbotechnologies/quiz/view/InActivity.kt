@@ -37,6 +37,7 @@ open class InActivity : AppCompatActivity() {
             }
     }
 
+
     private fun sendInteractedTime(interactedTime: Long) {
         if (auth.currentUser != null) {
             sharedPreferences = this.getSharedPreferences(
@@ -52,7 +53,7 @@ open class InActivity : AppCompatActivity() {
 
     @SuppressLint("SimpleDateFormat")
     override fun onUserInteraction() {
-       val time = System.currentTimeMillis()
+        val time = System.currentTimeMillis()
         sendInteractedTime(time)
         super.onUserInteraction()
     }
