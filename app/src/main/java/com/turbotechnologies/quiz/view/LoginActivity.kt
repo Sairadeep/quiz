@@ -89,7 +89,6 @@ class LoginActivity : InActivity() {
         super.onStart()
     }
 
-
     @SuppressLint("SimpleDateFormat")
     private fun signInUser(userEmail: String, userPassword: String) {
         auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener { task ->

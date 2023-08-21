@@ -358,6 +358,7 @@ class QuizActivity : InActivity() {
             }
 
             override fun onAnimationEnd(p0: Animator) {
+                sendScoreToDB()
                 Log.d("onAnimationEnd", "Animation has been ended.")
                 val intent = Intent(this@QuizActivity, ResultActivity::class.java)
                 startActivity(intent)
