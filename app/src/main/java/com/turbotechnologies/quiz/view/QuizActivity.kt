@@ -36,6 +36,7 @@ class QuizActivity : InActivity() {
     private var totalTime = 0L
     var timerContinue = false
     var timeLeft = 0L
+    var dialogText : String = "Hi"
     private var index = 0
     private var qnSet = HashSet<Int>()
     private lateinit var currentQn: Map<String, String>
@@ -144,7 +145,8 @@ class QuizActivity : InActivity() {
                 gameLogic()
                 Log.d("index", index.toString())
             } else {
-                finalDialogMessage()
+                dialogText = "Hey, you have answered all the questions."
+                finalDialogMessage(dialogText)
             }
         } else {
             Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
@@ -319,10 +321,10 @@ class QuizActivity : InActivity() {
         }
     }
 
-    private fun finalDialogMessage() {
+    private fun finalDialogMessage(text : String) {
         val dialogMessage = AlertDialog.Builder(this@QuizActivity)
         dialogMessage.setTitle("Quiz Game")
-        dialogMessage.setMessage("Congratulations!! \nYou have answered all the questions. Do you want to see the results?")
+        dialogMessage.setMessage(text)
         dialogMessage.setCancelable(false)
         dialogMessage.setPositiveButton("Result") { _, _ ->
             sendScoreToDB()
@@ -350,28 +352,33 @@ class QuizActivity : InActivity() {
             val value = it.animatedValue as Int
             timerProgress.progress = value
             Log.d("progress", value.toString())
-            textTime.text = ((totalTime * 5) - value).toString()
+            val updateTime = ((totalTime * 5) / 100.0) // 25 -> 1.25, 45 -> 2.25
+            Log.d("updatedTime", updateTime.toString())
+            val timeCalc = (value * updateTime).toLong()
+            Log.d("textTime", timeCalc.toString())
+            val reversalTime = totalTime * 5
+            textTime.text = (reversalTime - timeCalc).toString()
         }
-        timeAnimator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(p0: Animator) {
-                Log.d("onAnimationStart", "Animation has been started.")
-            }
+        timeAnimator.addListener(
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(p0: Animator) {
+                    Log.d("onAnimationStart", "Animation has been started.")
+                }
 
-            override fun onAnimationEnd(p0: Animator) {
-                sendScoreToDB()
-                Log.d("onAnimationEnd", "Animation has been ended.")
-                val intent = Intent(this@QuizActivity, ResultActivity::class.java)
-                startActivity(intent)
-            }
+                override fun onAnimationEnd(p0: Animator) {
+                    Log.d("onAnimationEnd", "Animation has been ended.")
+                    dialogText = "Sorry, Time is up!!"
+                    finalDialogMessage(dialogText)
+                }
 
-            override fun onAnimationCancel(p0: Animator) {
-                Log.d("onAnimationCancel", "Animation has been cancelled.")
-            }
+                override fun onAnimationCancel(p0: Animator) {
+                    Log.d("onAnimationCancel", "Animation has been cancelled.")
+                }
 
-            override fun onAnimationRepeat(p0: Animator) {
-                Log.d("onAnimationRepeat", "Animation is being repeated.")
-            }
-        })
+                override fun onAnimationRepeat(p0: Animator) {
+                    Log.d("onAnimationRepeat", "Animation is being repeated.")
+                }
+            })
         timeAnimator.start()
     }
 }
