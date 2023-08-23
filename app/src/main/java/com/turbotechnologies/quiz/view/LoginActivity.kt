@@ -58,18 +58,16 @@ class LoginActivity : InActivity() {
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
-            }else{
+            } else {
                 Snackbar.make(
                     loginBinding.loginLayout,
-                    "Username is mandatory.",
+                    "User Email is mandatory.",
                     Snackbar.LENGTH_LONG
                 ).show()
             }
-
         }
         loginBinding.buttonGoogleSignIn.setOnClickListener {
             signInGoogle()
-
         }
         loginBinding.textViewSignUp.setOnClickListener {
             val intent = Intent(this@LoginActivity, SignupActivity::class.java)
@@ -83,7 +81,7 @@ class LoginActivity : InActivity() {
 
     override fun onStart() {
         if (auth.currentUser != null) {
-            val intent: Intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
         super.onStart()
@@ -127,7 +125,6 @@ class LoginActivity : InActivity() {
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         activityResultLauncher.launch(signInIntent)
-
     }
 
     private fun registeringActivityForGoogleSignIn() {
@@ -144,7 +141,6 @@ class LoginActivity : InActivity() {
                     }
                 })
     }
-
 
     private fun firebaseSignInWithGoogle(task: Task<GoogleSignInAccount>) {
         try {

@@ -33,7 +33,7 @@ class SignupActivity : InActivity() {
             }else {
                 Snackbar.make(
                     signupBinding.signUpLayout,
-                    "Username is required while performing a signup.",
+                    "User Email is required while performing a signup.",
                     Snackbar.LENGTH_LONG
                 ).show()
             }
