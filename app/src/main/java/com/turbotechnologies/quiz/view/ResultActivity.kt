@@ -44,6 +44,13 @@ class ResultActivity : InActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        menu?.findItem(R.id.qnTimer)?.isVisible = false
+        menu?.findItem(R.id.appVersion)?.isVisible = false
+        menu?.findItem(R.id.item_logout)?.isVisible = true
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.item_logout) {
             FirebaseAuth.getInstance()
