@@ -1,6 +1,7 @@
 package com.turbotechnologies.quiz.view
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.turbotechnologies.quiz.databinding.ActivityForgotPasswordBinding
@@ -12,10 +13,19 @@ class ForgotPasswordActivity : InActivity() {
         forgotPasswordBinding = ActivityForgotPasswordBinding.inflate(layoutInflater)
         val view = forgotPasswordBinding.root
         setContentView(view)
+        forgotPasswordBinding.forgotPwdLayout.setOnClickListener {
+            hideKeyboard(it)
+        }
         forgotPasswordBinding.buttonResetPwd.setOnClickListener {
             val userEmail = forgotPasswordBinding.editTextforgotpwdEmail.text.toString()
             if (userEmail.isNotEmpty()) {
-                forgotPassword(userEmail)
+                if (!validEmail(userEmail)) {
+                    Toast.makeText(this, "Please enter a valid email format", Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    Log.d("ValidEmail", "Valid Email entered")
+                    forgotPassword(userEmail)
+                }
             } else {
                 Snackbar.make(
                     forgotPasswordBinding.forgotPwdLayout,

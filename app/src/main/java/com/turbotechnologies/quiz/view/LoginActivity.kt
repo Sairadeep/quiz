@@ -4,10 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -44,19 +44,29 @@ class LoginActivity : InActivity() {
 
         loginBinding.progressBar4.visibility = View.INVISIBLE
 
+        loginBinding.loginLayout.setOnClickListener {
+            hideKeyboard(it)
+        }
+
         loginBinding.buttonSignIn.setOnClickListener {
             val userEmail = loginBinding.editTextLoginEmail.text.toString()
             val userPassword = loginBinding.editTextLoginPassword.text.toString()
             if (userEmail.isNotEmpty()) {
-                if (userPassword.isNotEmpty()) {
-                    loginBinding.progressBar4.visibility = View.VISIBLE
-                    signInUser(userEmail, userPassword)
+                if (!validEmail(userEmail)) {
+                    Toast.makeText(this, "Please enter a valid email format", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
-                    Snackbar.make(
-                        loginBinding.loginLayout,
-                        "Password is mandatory.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    Log.d("ValidEmail", "Valid Email entered")
+                    if (userPassword.isNotEmpty()) {
+                        loginBinding.progressBar4.visibility = View.VISIBLE
+                        signInUser(userEmail, userPassword)
+                    } else {
+                        Snackbar.make(
+                            loginBinding.loginLayout,
+                            "Password is mandatory.",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                 }
             } else {
                 Snackbar.make(
@@ -65,9 +75,11 @@ class LoginActivity : InActivity() {
                     Snackbar.LENGTH_LONG
                 ).show()
             }
+
         }
         loginBinding.buttonGoogleSignIn.setOnClickListener {
             signInGoogle()
+
         }
         loginBinding.textViewSignUp.setOnClickListener {
             val intent = Intent(this@LoginActivity, SignupActivity::class.java)
@@ -91,8 +103,8 @@ class LoginActivity : InActivity() {
     private fun signInUser(userEmail: String, userPassword: String) {
         auth.signInWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
-                    .show()
+//                Toast.makeText(applicationContext, "Welcome to Quiz Game", Toast.LENGTH_SHORT)
+//                    .show()
                 loggedInTime = System.currentTimeMillis()
                 val loggedInDate = SimpleDateFormat("HH:mm:ss").format(loggedInTime)
                 loginTime(loggedInDate)
@@ -125,31 +137,32 @@ class LoginActivity : InActivity() {
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         activityResultLauncher.launch(signInIntent)
+
     }
 
     private fun registeringActivityForGoogleSignIn() {
         activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult(),
-                ActivityResultCallback { result ->
-                    val resultCode = result.resultCode
-                    val data = result.data
-                    loginBinding.progressBarGoogleSign.visibility = View.VISIBLE
-                    if (resultCode == RESULT_OK && data != null) {
-                        val task: Task<GoogleSignInAccount> =
-                            GoogleSignIn.getSignedInAccountFromIntent(data)
-                        firebaseSignInWithGoogle(task)
-                    }
-                })
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                val resultCode = result.resultCode
+                val data = result.data
+                loginBinding.progressBarGoogleSign.visibility = View.VISIBLE
+                if (resultCode == RESULT_OK && data != null) {
+                    val task: Task<GoogleSignInAccount> =
+                        GoogleSignIn.getSignedInAccountFromIntent(data)
+                    firebaseSignInWithGoogle(task)
+                }
+            }
     }
 
     private fun firebaseSignInWithGoogle(task: Task<GoogleSignInAccount>) {
         try {
             val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
-            Toast.makeText(
-                applicationContext,
-                "Successfully logged in with Gmail account",
-                Toast.LENGTH_SHORT
-            ).show()
+//            Toast.makeText(
+//                applicationContext,
+//                "Successfully logged in with Gmail account",
+//                Toast.LENGTH_SHORT
+//            ).show()
             val intent = Intent(this@LoginActivity, MainActivity::class.java)
             startActivity(intent)
             finish()

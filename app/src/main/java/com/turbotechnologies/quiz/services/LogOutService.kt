@@ -26,7 +26,7 @@ class LogOutService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         sharedPreferences = this.getSharedPreferences("interactionTime", Context.MODE_PRIVATE)
-       // Toast.makeText(applicationContext, "Service Started", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, "Service Started", Toast.LENGTH_SHORT).show()
 
         timer = object : CountDownTimer(600000, 10000) {
             override fun onTick(p0: Long) {

@@ -5,12 +5,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -46,7 +43,6 @@ class DataSyncService : Service() {
         })
     }
 
-    @RequiresApi(VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         notification()
         return super.onStartCommand(intent, flags, startId)
@@ -56,8 +52,8 @@ class DataSyncService : Service() {
         return null
     }
 
-    @RequiresApi(VERSION_CODES.N)
     private fun notification() {
+        Log.d("ServiceStart","Service has been started.")
         var userPositiveResponse: String
         var userNegativeResponse: String
         dataForService { userCorrect, userWrong ->
@@ -72,32 +68,30 @@ class DataSyncService : Service() {
             val notificationBuilder =
                 NotificationCompat.Builder(this, notificationChannelID)
 
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-                val channel = NotificationChannel(
-                    notificationChannelID,
-                    "notification",
-                    NotificationManager.IMPORTANCE_HIGH
-                )
+            val channel = NotificationChannel(
+                notificationChannelID,
+                "notification",
+                NotificationManager.IMPORTANCE_HIGH
+            )
 
-                val notificationManager: NotificationManager by lazy {
-                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                }
-                notificationManager.createNotificationChannel(channel)
-
-                notificationBuilder.setContentTitle("Turbo Technologies")
-                    .setContentText("Data updated Successfully!").setStyle(
-                        NotificationCompat.BigTextStyle().bigText(
-                            "Updated Results \n" +
-                                    " Correct Answers: $userPositiveResponse \n" +
-                                    " Wrong Answers: $userNegativeResponse"
-                        )
-                    )
-                    .setSmallIcon(R.drawable.ic_launcher_background).priority =
-                    NotificationCompat.PRIORITY_MAX
-                notificationBuilder.setContentIntent(pendingIntent)
-                val notification = notificationBuilder.build()
-                startForeground(1, notification)
+            val notificationManager: NotificationManager by lazy {
+                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             }
+            notificationManager.createNotificationChannel(channel)
+
+            notificationBuilder.setContentTitle("Turbo Technologies")
+                .setContentText("Data updated Successfully!").setStyle(
+                    NotificationCompat.BigTextStyle().bigText(
+                        "Updated Results \n" +
+                                " Correct Answers: $userPositiveResponse \n" +
+                                " Wrong Answers: $userNegativeResponse"
+                    )
+                )
+                .setSmallIcon(R.drawable.ic_launcher_background).priority =
+                NotificationCompat.PRIORITY_MAX
+            notificationBuilder.setContentIntent(pendingIntent)
+            val notification = notificationBuilder.build()
+            startForeground(1, notification)
         }
     }
 }

@@ -31,10 +31,8 @@ class MainActivity : InActivity() {
         setContentView(view)
         dataView = ViewModelProvider(this)[QuizViewModel::class.java]
 
-        if (auth.currentUser != null) {
-            startService(Intent(this@MainActivity, LogOutService::class.java))
-            startService(Intent(this@MainActivity, DataSyncService::class.java))
-        }
+        startService(Intent(this@MainActivity, LogOutService::class.java))
+        startService(Intent(this@MainActivity, DataSyncService::class.java))
 
         Snackbar.make(
             mainBinding.mainActivityLayout,

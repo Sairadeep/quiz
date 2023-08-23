@@ -3,6 +3,7 @@ package com.turbotechnologies.quiz.view
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
@@ -17,20 +18,29 @@ class SignupActivity : InActivity() {
         signupBinding = ActivitySignupBinding.inflate(layoutInflater)
         val view = signupBinding.root
         setContentView(view)
+        signupBinding.signUpLayout.setOnClickListener {
+            hideKeyboard(it)
+        }
         signupBinding.buttonSignUp.setOnClickListener {
             val email = signupBinding.editTextSignUpEmail.text.toString()
             val password = signupBinding.editTextSignUpPassword.text.toString()
             if (email.isNotEmpty()) {
-                if (password.isNotEmpty()) {
-                    signUpWithFireBase(email, password)
+                if (!validEmail(email)) {
+                    Toast.makeText(this, "Please enter a valid email format", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
-                    Snackbar.make(
-                        signupBinding.signUpLayout,
-                        "Password is required while performing a signup.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    Log.d("ValidEmail", "Valid Email entered")
+                    if (password.isNotEmpty()) {
+                        signUpWithFireBase(email, password)
+                    } else {
+                        Snackbar.make(
+                            signupBinding.signUpLayout,
+                            "Password is required while performing a signup.",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                 }
-            }else {
+            } else {
                 Snackbar.make(
                     signupBinding.signUpLayout,
                     "User Email is required while performing a signup.",
