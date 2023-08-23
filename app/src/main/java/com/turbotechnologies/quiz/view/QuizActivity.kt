@@ -36,7 +36,7 @@ class QuizActivity : InActivity() {
     private var totalTime = 0L
     var timerContinue = false
     var timeLeft = 0L
-    var dialogText : String = "Hi"
+    var dialogText: String = "Hi"
     private var index = 0
     private var qnSet = HashSet<Int>()
     private lateinit var currentQn: Map<String, String>
@@ -321,7 +321,7 @@ class QuizActivity : InActivity() {
         }
     }
 
-    private fun finalDialogMessage(text : String) {
+    private fun finalDialogMessage(text: String) {
         val dialogMessage = AlertDialog.Builder(this@QuizActivity)
         dialogMessage.setTitle("Quiz Game")
         dialogMessage.setMessage(text)
@@ -343,21 +343,18 @@ class QuizActivity : InActivity() {
         val title: TextView = quizBinding.toolbarTitle
         title.text = "Quiz Game"
         val timerProgress: ProgressBar = quizBinding.progressBarOverall
+        val reversalTime = (totalTime * 5).toInt() // 45 -> 225
         val timeAnimator: ValueAnimator = ValueAnimator.ofInt(
-            0, 100
+            0, reversalTime
         )
         timeAnimator.duration = totalTime * 5000
         timeAnimator.interpolator = LinearInterpolator()
         timeAnimator.addUpdateListener {
             val value = it.animatedValue as Int
-            timerProgress.progress = value
-            Log.d("progress", value.toString())
             val updateTime = ((totalTime * 5) / 100.0) // 25 -> 1.25, 45 -> 2.25
-            Log.d("updatedTime", updateTime.toString())
-            val timeCalc = (value * updateTime).toLong()
-            Log.d("textTime", timeCalc.toString())
-            val reversalTime = totalTime * 5
-            textTime.text = (reversalTime - timeCalc).toString()
+            timerProgress.progress = (value / updateTime).toInt()
+            Log.d("progress", value.toString())
+            textTime.text = (reversalTime - value).toString()
         }
         timeAnimator.addListener(
             object : Animator.AnimatorListener {
