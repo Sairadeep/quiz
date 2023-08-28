@@ -145,14 +145,15 @@ class QuizActivity : InActivity() {
                 gameLogic()
                 Log.d("index", index.toString())
             } else {
-                dialogText = "Hey, you have answered all the questions."
-                finalDialogMessage(dialogText)
+                index = 5
+                finalDialogMessage()
             }
         } else {
             Toast.makeText(applicationContext, "Please provide an answer!", Toast.LENGTH_SHORT)
                 .show()
         }
     }
+
 
     private fun didUserAttempt(): Boolean {
         if ((quizBinding.textViewOptionA.currentTextColor == Color.GREEN) ||
@@ -196,12 +197,10 @@ class QuizActivity : InActivity() {
         }
         Log.d("qnNumber", qnIndex.toString())
         questionData.qnestions()
-
         quizBinding.progressBarQnPage.visibility = View.INVISIBLE
         quizBinding.linearLayoutInfo.visibility = View.VISIBLE
         quizBinding.linearLayoutQns.visibility = View.VISIBLE
         quizBinding.linearLayoutButtons.visibility = View.VISIBLE
-
         startTimer()
     }
 
@@ -279,7 +278,7 @@ class QuizActivity : InActivity() {
                     {
                         QuizActivity::class.java
                         quizBinding.buttonNextQn.performClick()
-                    }, 2000
+                    }, 500
                 )
             }
         }.start()
@@ -321,7 +320,7 @@ class QuizActivity : InActivity() {
         }
     }
 
-    private fun finalDialogMessage(text: String) {
+    private fun finalDialogMessage(text: String = "Hey, you have answered all the questions.") {
         val dialogMessage = AlertDialog.Builder(this@QuizActivity)
         dialogMessage.setTitle("Quiz Game")
         dialogMessage.setMessage(text)
@@ -348,6 +347,10 @@ class QuizActivity : InActivity() {
             0, reversalTime
         )
         timeAnimator.duration = totalTime * 5000
+//        if (hasWindowFocus()) {
+//            timeAnimator.cancel()
+//            textTime.text = "😒"
+//        } else {
         timeAnimator.interpolator = LinearInterpolator()
         timeAnimator.addUpdateListener {
             val value = it.animatedValue as Int
@@ -355,7 +358,13 @@ class QuizActivity : InActivity() {
             timerProgress.progress = (value / updateTime).toInt()
             Log.d("progress", value.toString())
             textTime.text = (reversalTime - value).toString()
+            if (index == 5) {
+                // Toast.makeText(this,"index: $index",Toast.LENGTH_SHORT).show()
+                timeAnimator.cancel()
+                textTime.text = "😒"
+            }
         }
+
         timeAnimator.addListener(
             object : Animator.AnimatorListener {
                 override fun onAnimationStart(p0: Animator) {
@@ -364,8 +373,12 @@ class QuizActivity : InActivity() {
 
                 override fun onAnimationEnd(p0: Animator) {
                     Log.d("onAnimationEnd", "Animation has been ended.")
-                    dialogText = "Sorry, Time is up!!"
-                    finalDialogMessage(dialogText)
+                    if (textTime.text == "0") {
+                        dialogText = "Sorry, Time is up !!"
+                        finalDialogMessage(dialogText)
+                        textTime.text = "😒"
+                        timer.cancel()
+                    }
                 }
 
                 override fun onAnimationCancel(p0: Animator) {
@@ -377,5 +390,11 @@ class QuizActivity : InActivity() {
                 }
             })
         timeAnimator.start()
+//        }
     }
+
+//    override fun onPause() {
+//        Log.d("I'mPaused", "Activity has been paused.")
+//        super.onPause()
+//    }
 }
