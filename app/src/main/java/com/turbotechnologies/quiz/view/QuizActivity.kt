@@ -7,8 +7,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -25,7 +23,6 @@ import kotlin.random.Random
 
 class QuizActivity : InActivity() {
     lateinit var quizBinding: ActivityQuizBinding
-    private val handler = Handler(Looper.getMainLooper())
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private lateinit var questionData: QuizViewModel
     private var correctAnswer = ""
@@ -267,19 +264,14 @@ class QuizActivity : InActivity() {
                 Toast.makeText(
                     applicationContext,
                     "Sorry, time up, moving to the next question",
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
                 ).show()
                 actualAnswer()
                 userWrongInputScore++
                 quizBinding.textViewWrongAnswerCount.text = userWrongInputScore.toString()
                 disableOptions()
                 timerContinue = false
-                handler.postDelayed(
-                    {
-                        QuizActivity::class.java
-                        quizBinding.buttonNextQn.performClick()
-                    }, 500
-                )
+                quizBinding.buttonNextQn.performClick()
             }
         }.start()
         timerContinue = true
