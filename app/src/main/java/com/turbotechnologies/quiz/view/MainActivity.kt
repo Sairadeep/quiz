@@ -54,6 +54,8 @@ class MainActivity : InActivity() {
         }
     }
 
+    // There are changes from Material 3 implementation where we need to refer the course again
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(
             R.menu.menu_signout,
